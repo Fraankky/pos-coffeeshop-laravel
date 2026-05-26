@@ -16,10 +16,10 @@ function App() {
       <Routes>
         <Route path="/login" element={<LoginPage />} />
         <Route element={<ProtectedRoute />}>
+          <Route path="/kasir" element={<KasirPage />} />
+          <Route path="/admin" element={<AdminDashboardPage />} />
           <Route element={<Layout />}>
-            <Route path="/kasir" element={<KasirPage />} />
             <Route path="/barista" element={<BaristaPage />} />
-            <Route path="/admin" element={<AdminDashboardPage />} />
             <Route path="/admin/menu" element={<AdminMenuPage />} />
             <Route path="/admin/users" element={<AdminUsersPage />} />
             <Route path="/admin/tables" element={<AdminTablesPage />} />
