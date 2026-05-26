@@ -12,10 +12,15 @@ class ReportService
     public function getSales(?string $period, ?string $from, ?string $to): array
     {
         $period = $period ?? 'day';
+        $driver = DB::connection()->getDriverName();
 
         $selectDate = match ($period) {
-            'week' => DB::raw("DATE_FORMAT(created_at, '%Y-%u') as period"),
-            'month' => DB::raw("DATE_FORMAT(created_at, '%Y-%m') as period"),
+            'week' => DB::raw($driver === 'sqlite'
+                ? "strftime('%Y-%W', created_at) as period"
+                : "DATE_FORMAT(created_at, '%Y-%u') as period"),
+            'month' => DB::raw($driver === 'sqlite'
+                ? "strftime('%Y-%m', created_at) as period"
+                : "DATE_FORMAT(created_at, '%Y-%m') as period"),
             default => DB::raw("DATE(created_at) as period"),
         };
 

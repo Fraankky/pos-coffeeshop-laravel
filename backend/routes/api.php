@@ -28,11 +28,11 @@ Route::prefix('v1')->group(function () {
         Route::apiResource('/tables', App\Http\Controllers\Api\V1\TableController::class);
 
         // Orders
+        Route::get('/orders/active', [App\Http\Controllers\Api\V1\OrderController::class, 'activeOrders']);
         Route::get('/orders', [App\Http\Controllers\Api\V1\OrderController::class, 'index']);
         Route::post('/orders', [App\Http\Controllers\Api\V1\OrderController::class, 'store']);
         Route::get('/orders/{order}', [App\Http\Controllers\Api\V1\OrderController::class, 'show']);
         Route::patch('/orders/{order}/status', [App\Http\Controllers\Api\V1\OrderController::class, 'updateStatus']);
-        Route::get('/orders/active', [App\Http\Controllers\Api\V1\OrderController::class, 'activeOrders']);
 
         // Payments
         Route::post('/orders/{order}/payment', [App\Http\Controllers\Api\V1\PaymentController::class, 'store']);
