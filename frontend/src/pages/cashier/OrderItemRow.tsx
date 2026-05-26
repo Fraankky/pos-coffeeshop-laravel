@@ -29,14 +29,14 @@ export function OrderItemRow({ item, onUpdateQty, onRemove }: Props) {
           <div className="flex items-center gap-2">
             <button
               onClick={() => onUpdateQty(item.id, item.quantity - 1)}
-              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-forest hover:text-forest transition-colors"
+              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-bronze hover:text-bronze transition-colors"
             >
               <i className="fas fa-minus text-[10px]" />
             </button>
             <span className="text-sm font-semibold w-4 text-center">{item.quantity}</span>
             <button
               onClick={() => onUpdateQty(item.id, item.quantity + 1)}
-              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-forest hover:text-forest transition-colors"
+              className="w-6 h-6 rounded-full border border-gray-200 flex items-center justify-center text-gray-400 hover:border-bronze hover:text-bronze transition-colors"
             >
               <i className="fas fa-plus text-[10px]" />
             </button>

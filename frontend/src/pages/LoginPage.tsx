@@ -22,45 +22,67 @@ export function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#12100c]">
-      <div className="bg-espresso border border-mocha/30 rounded-3xl p-8 w-full max-w-md mx-4 shadow-2xl shadow-black/40">
-        <div className="flex items-center justify-center gap-2 mb-6">
-          <span className="text-2xl">☕</span>
-          <h1 className="text-2xl font-extrabold text-cream tracking-tight">POS Coffee</h1>
+    <div className="min-h-screen bg-cream flex items-center justify-center">
+      <div className="bg-white rounded-3xl p-8 w-full max-w-md mx-4 shadow-lg border border-cream-dark">
+        <div className="flex items-center justify-center gap-3 mb-8">
+          <div className="w-10 h-10 bg-bronze rounded-xl flex items-center justify-center">
+            <i className="fas fa-leaf text-white text-sm" />
+          </div>
+          <div>
+            <h1 className="font-bold text-espresso text-lg leading-tight tracking-tight">BREW & CO.</h1>
+            <p className="text-[10px] text-gray-500 -mt-0.5">COFFEE · POS</p>
+          </div>
         </div>
 
         {error && (
-          <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl mb-4 text-sm">
+          <div className="bg-coral-light border border-coral/20 text-coral px-4 py-3 rounded-2xl mb-4 text-sm flex items-center gap-2">
+            <i className="fas fa-exclamation-circle" />
             {error}
           </div>
         )}
 
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
-          <input
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-4 py-3 text-milk placeholder-cream/30 focus:outline-none focus:ring-2 focus:ring-caramen transition-all"
-          />
-          <input
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-            className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-4 py-3 text-milk placeholder-cream/30 focus:outline-none focus:ring-2 focus:ring-caramen transition-all"
-          />
+          <div>
+            <label className="text-xs text-gray-500 mb-1.5 block font-medium">Email</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="admin@pos.coffee"
+              required
+              className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-bronze/20 focus:border-bronze/30 transition-all"
+            />
+          </div>
+
+          <div>
+            <label className="text-xs text-gray-500 mb-1.5 block font-medium">Password</label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="••••••••"
+              required
+              minLength={6}
+              className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-bronze/20 focus:border-bronze/30 transition-all"
+            />
+          </div>
+
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-caramen text-white py-3 rounded-xl hover:bg-caramen-hover transition-all duration-150 disabled:opacity-30 disabled:cursor-not-allowed font-medium active:scale-[0.98]"
+            className="w-full bg-bronze hover:bg-bronze-dark text-white py-3.5 rounded-2xl transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed font-semibold text-sm active:scale-[0.98] shadow-lg shadow-bronze/20 flex items-center justify-center gap-2"
           >
-            {isLoading ? 'Memproses...' : 'Login'}
+            {isLoading ? (
+              <><i className="fas fa-spinner fa-spin" /> Memproses...</>
+            ) : (
+              <><i className="fas fa-arrow-right-to-bracket" /> Masuk</>
+            )}
           </button>
         </form>
+
+        <p className="text-xs text-gray-400 text-center mt-6">
+          Demo: admin@pos.coffee / password
+        </p>
       </div>
     </div>
   );

@@ -5,8 +5,14 @@ import { useAuthStore } from '@/stores/authStore';
 import { CategoryTabs } from '@/pages/cashier/CategoryTabs';
 import { ProductCard } from '@/pages/cashier/ProductCard';
 import { ReceiptSidebar } from '@/pages/cashier/ReceiptSidebar';
-import { CATEGORY_TABS, PRODUCT_IMAGES, PRICES } from '@/lib/constants';
 import api from '@/lib/api';
+import type { MenuItem, Category } from '@/types';
+
+const CATEGORY_MAP: Record<string, string> = {
+  coffee: 'Kopi',
+  tea: 'Teh',
+  snack: 'Makanan Ringan',
+};
 
 export function KasirPage() {
   const { items, addItem, clearCart } = useCartStore();
@@ -17,35 +23,52 @@ export function KasirPage() {
   const [search, setSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
+  const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    api.get('/tables').then(({ data }) => {
-      const t = data.data.map((table: any) => ({
+    Promise.all([
+      api.get('/menu-items', { params: { per_page: 100 } }),
+      api.get('/tables'),
+      api.get('/categories'),
+    ]).then(([itemsRes, tablesRes, catRes]) => {
+      setMenuItems(itemsRes.data.data.data);
+      setCategories(catRes.data.data);
+      const t = (tablesRes.data.data as any[]).map((table: any) => ({
         id: table.id,
-        label: `${table.table_number} - ${table.capacity} seats`,
+        label: `T${table.table_number} - ${table.capacity} seats ${table.status === 'occupied' ? '(occupied)' : ''}`,
       }));
       setTables(t);
+      setIsLoading(false);
     });
   }, []);
 
-  const categoryData = CATEGORY_TABS.find((c) => c.key === activeTab)!;
-  const availableItems = categoryData?.items ?? [];
-  const filteredItems = availableItems.filter((n) =>
-    n.toLowerCase().includes(search.toLowerCase())
-  );
+  const filteredMenuItems = menuItems.filter((item) => {
+    const cat = categories.find((c) => c.id === item.category_id);
+    const catKey = Object.entries(CATEGORY_MAP).find(([, v]) => v === cat?.name)?.[0] || '';
+    const matchesCategory = catKey === activeTab || !activeTab;
+    const matchesSearch = search === '' || item.name.toLowerCase().includes(search.toLowerCase());
+    return matchesCategory && matchesSearch && item.is_available;
+  });
 
-  const orderCounts = Object.fromEntries(
-    CATEGORY_TABS.map((c) => [c.key, c.items.length])
-  );
+  const countByCategory = (name: string) =>
+    menuItems.filter((m) => categories.find((c) => c.id === m.category_id)?.name === name).length;
 
-  const handleAddItem = useCallback((name: string) => {
+  const orderCounts = {
+    coffee: countByCategory('Kopi'),
+    tea: countByCategory('Teh'),
+    snack: countByCategory('Makanan Ringan'),
+  };
+
+  const handleAddItem = useCallback(async (item: MenuItem) => {
     addItem({
-      name,
-      price: PRICES[name] || 4.0,
+      name: item.name,
+      price: item.price,
       size: 'regular',
       toppings: [],
       notes: '',
-      image: PRODUCT_IMAGES[name] || PRODUCT_IMAGES.default,
+      image: `https://images.unsplash.com/photo-${Math.random().toString(36).slice(2, 10)}?w=150&h=150&fit=crop`,
     });
   }, [addItem]);
 
@@ -56,8 +79,8 @@ export function KasirPage() {
 
     try {
       const payload = {
-        order_type: orderType,
-        table_id: tableId,
+        order_type: orderType === 'order_online' ? 'takeaway' : orderType,
+        table_id: orderType === 'dine_in' ? tableId : null,
         items: items.map((i) => ({
           menu_item_id: 1,
           quantity: i.quantity,
@@ -84,86 +107,109 @@ export function KasirPage() {
     }
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-cream flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-12 h-12 border-4 border-bronze/30 border-t-bronze rounded-full animate-spin" />
+          <p className="text-sm text-gray-500">Memuat menu...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-cream">
-      <header className="px-6 py-3 flex items-center justify-between">
+    <div className="min-h-screen bg-cream flex flex-col">
+      <header className="px-6 py-3 flex items-center justify-between border-b border-cream-dark/50 bg-white/50 backdrop-blur-sm sticky top-0 z-30">
         <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-forest rounded-lg flex items-center justify-center">
+          <div className="w-8 h-8 bg-bronze rounded-lg flex items-center justify-center shadow-sm">
             <i className="fas fa-leaf text-white text-sm" />
           </div>
           <div>
-            <h1 className="font-bold text-forest text-sm leading-tight">GREEN<br />GROUNDS</h1>
-            <p className="text-[10px] text-forest/70 -mt-0.5">COFFEE</p>
+            <h1 className="font-bold text-espresso text-sm leading-tight tracking-tight">BREW & CO.</h1>
+            <p className="text-[10px] text-gray-400 -mt-0.5">COFFEE</p>
           </div>
         </div>
 
-        <p className="text-sm text-gray-600 font-medium">
+        <p className="text-sm text-gray-500 font-medium hidden md:block">
           {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
 
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-4 text-sm">
-            <span className="text-gray-600">
-              Total : <span className="font-semibold text-gray-800">{items.length} Items</span>
-            </span>
-            <button
-              onClick={() => handlePlaceOrder()}
-              className="flex items-center gap-2 px-4 py-2 bg-white rounded-full shadow-sm text-sm font-medium hover:shadow-md transition"
-            >
-              <span>Report</span>
-              <i className="fas fa-file-alt text-gray-400" />
-            </button>
-          </div>
-          <button className="relative p-2 hover:bg-white/50 rounded-full transition">
-            <i className="fas fa-bell text-gray-600" />
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-gray-500 hidden sm:block">
+            <span className="font-semibold text-gray-700">{items.length}</span> items
+          </span>
+          <button className="relative p-2 hover:bg-white rounded-full transition-all hover:shadow-sm">
+            <i className="fas fa-bell text-gray-500" />
             <span className="absolute top-1 right-1 w-4 h-4 bg-coral text-white text-[10px] rounded-full flex items-center justify-center font-bold">4</span>
           </button>
-          <div className="flex items-center gap-3 bg-white rounded-full pl-1 pr-4 py-1 shadow-sm">
+          <div className="flex items-center gap-2 bg-white rounded-full pl-1 pr-3 py-1 shadow-sm border border-cream-dark/30">
             <img
-              src={`https://i.pravatar.cc/150?img=5`}
-              alt="Cashier"
-              className="w-8 h-8 rounded-full"
+              src={`https://i.pravatar.cc/150?u=${user?.id || 5}`}
+              alt=""
+              className="w-7 h-7 rounded-full"
             />
-            <div className="text-sm">
-              <p className="font-semibold text-gray-800">{user?.name || 'Cashier'}</p>
-              <p className="text-xs text-gray-500">Cashier</p>
+            <div className="text-sm hidden sm:block">
+              <p className="font-semibold text-gray-700 text-xs leading-tight">{user?.name || 'Cashier'}</p>
+              <p className="text-[10px] text-gray-400">Cashier</p>
             </div>
           </div>
         </div>
       </header>
 
-      <div className="flex gap-4 px-6 pb-6">
-        <div className="flex-1">
-          <div className="relative mb-4">
+      <div className="flex-1 flex gap-4 px-6 py-4 overflow-hidden">
+        <div className="flex-1 flex flex-col overflow-hidden">
+          <div className="relative mb-4 flex-shrink-0">
             <i className="fas fa-search absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search"
-              className="w-full bg-white rounded-full py-3 pl-12 pr-12 text-sm border-none shadow-sm focus:outline-none focus:ring-2 focus:ring-forest/20"
+              placeholder="Cari menu..."
+              className="w-full bg-white rounded-2xl py-3 pl-12 pr-12 text-sm border border-cream-dark/30 shadow-sm focus:outline-none focus:ring-2 focus:ring-bronze/20 focus:border-bronze/30 transition-all"
             />
-            <button className="absolute right-3 top-1/2 -translate-y-1/2 w-8 h-8 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-200 transition">
-              <i className="fas fa-th-large text-xs" />
-            </button>
+            {search && (
+              <button
+                onClick={() => setSearch('')}
+                className="absolute right-3 top-1/2 -translate-y-1/2 w-7 h-7 bg-gray-100 rounded-full flex items-center justify-center text-gray-400 hover:bg-gray-200 transition text-xs"
+              >
+                <i className="fas fa-times" />
+              </button>
+            )}
           </div>
 
           <CategoryTabs activeTab={activeTab} onTabChange={setActiveTab} orderCounts={orderCounts} />
 
           {error && (
-            <div className="bg-coral-light border border-coral/20 text-coral px-4 py-3 rounded-2xl mb-4 text-sm">{error}</div>
+            <div className="bg-coral-light border border-coral/20 text-coral px-4 py-3 rounded-2xl mb-3 text-sm flex items-center gap-2 flex-shrink-0 animate-in slide-in-from-top-2">
+              <i className="fas fa-exclamation-circle" />
+              {error}
+            </div>
           )}
 
-          <div className="grid grid-cols-4 gap-3">
-            {filteredItems.map((name) => (
-              <ProductCard
-                key={name}
-                name={name}
-                price={PRICES[name] || 4.0}
-                image={PRODUCT_IMAGES[name] || PRODUCT_IMAGES.default}
-                onAdd={() => handleAddItem(name)}
-              />
-            ))}
+          <div className="flex-1 overflow-y-auto">
+            {filteredMenuItems.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-20 text-gray-400">
+                <i className="fas fa-search text-4xl mb-3 opacity-30" />
+                <p className="text-sm font-medium text-gray-500">Menu tidak ditemukan</p>
+                <p className="text-xs mt-1">Coba cari dengan kata lain</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pb-4">
+                {filteredMenuItems.map((item) => {
+                  const priceInDollars = item.price / 15000;
+                  return (
+                    <ProductCard
+                      key={item.id}
+                      name={item.name}
+                      price={Number(priceInDollars.toFixed(1))}
+                      image={`https://images.unsplash.com/photo-${item.id * 1000}?w=150&h=150&fit=crop`}
+                      onAdd={() => handleAddItem(item)}
+                    />
+                  );
+                })}
+              </div>
+            )}
           </div>
         </div>
 
@@ -174,6 +220,11 @@ export function KasirPage() {
         .receipt-scroll::-webkit-scrollbar { width: 4px; }
         .receipt-scroll::-webkit-scrollbar-track { background: transparent; }
         .receipt-scroll::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 4px; }
+        @keyframes slide-in-from-top-2 {
+          from { opacity: 0; transform: translateY(-8px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-in { animation: slide-in-from-top-2 0.2s ease-out; }
       `}</style>
     </div>
   );

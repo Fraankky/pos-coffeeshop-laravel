@@ -3,7 +3,7 @@ export function RadarChart() {
     <div className="bg-white rounded-2xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <i className="fas fa-coffee text-forest" />
+          <i className="fas fa-coffee text-bronze" />
           <h3 className="font-semibold text-gray-800">Items Performance</h3>
         </div>
         <button className="text-gray-400"><i className="fas fa-ellipsis-h" /></button>
@@ -14,7 +14,7 @@ export function RadarChart() {
           <polygon points="110,50 170,90 170,150 110,190 50,150 50,90" fill="none" stroke="#f0f0f0" strokeWidth="1" />
           <polygon points="110,70 150,100 150,140 110,170 70,140 70,100" fill="none" stroke="#f0f0f0" strokeWidth="1" />
 
-          <polygon points="110,45 175,85 185,155 110,195 35,155 45,85" fill="rgba(27,77,62,0.1)" stroke="#1B4D3E" strokeWidth="1.5" />
+          <polygon points="110,45 175,85 185,155 110,195 35,155 45,85" fill="rgba(184,107,51,0.15)" stroke="#B86B33" strokeWidth="1.5" />
           {[
             { cx: 110, cy: 45 },
             { cx: 175, cy: 85 },
@@ -23,7 +23,7 @@ export function RadarChart() {
             { cx: 35, cy: 155 },
             { cx: 45, cy: 85 },
           ].map((p, i) => (
-            <circle key={i} cx={p.cx} cy={p.cy} r="4" fill="#1B4D3E" />
+            <circle key={i} cx={p.cx} cy={p.cy} r="4" fill="#B86B33" />
           ))}
 
           {[

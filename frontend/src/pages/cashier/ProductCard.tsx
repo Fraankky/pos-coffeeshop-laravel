@@ -19,11 +19,11 @@ export function ProductCard({ name, price, image, onAdd }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h4 className="font-semibold text-gray-800 text-sm">{name}</h4>
-          <p className="text-forest font-bold">${price.toFixed(1)}</p>
+          <p className="text-bronze font-bold">${price.toFixed(1)}</p>
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onAdd(); }}
-          className="w-8 h-8 border-2 border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:border-forest hover:text-forest transition-colors"
+          className="w-8 h-8 border-2 border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:border-bronze hover:text-bronze transition-colors"
         >
           <i className="fas fa-plus text-xs" />
         </button>

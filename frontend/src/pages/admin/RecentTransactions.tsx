@@ -10,7 +10,7 @@ export function RecentTransactions() {
     <div className="col-span-2 bg-white rounded-2xl p-6 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <i className="fas fa-exchange-alt text-forest" />
+          <i className="fas fa-exchange-alt text-bronze" />
           <h3 className="font-semibold text-gray-800">Recent Transaction</h3>
         </div>
         <div className="flex items-center gap-2">

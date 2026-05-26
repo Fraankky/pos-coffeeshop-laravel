@@ -23,7 +23,7 @@ export function CategoryTabs({ activeTab, onTabChange, orderCounts }: Props) {
             key={tab.key}
             onClick={() => onTabChange(tab.key)}
             className={`flex-1 rounded-2xl p-4 text-left relative overflow-hidden h-28 transition-all duration-200
-              ${isActive ? 'bg-forest text-white shadow-lg shadow-forest/20' : 'bg-white text-gray-800 hover:shadow-md'}`}
+              ${isActive ? 'bg-bronze text-white shadow-lg shadow-bronze/20' : 'bg-white text-gray-800 hover:shadow-md'}`}
           >
             <span className={`inline-block px-3 py-1 rounded-full text-xs mb-2 font-medium
               ${isActive

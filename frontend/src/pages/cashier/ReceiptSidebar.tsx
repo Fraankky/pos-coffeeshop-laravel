@@ -25,7 +25,7 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
     <div className="w-96 bg-white rounded-2xl shadow-sm flex flex-col h-[calc(100vh-100px)]">
       <div className="p-5 border-b border-gray-100">
         <div className="flex items-center justify-between mb-4">
-          <button className="w-10 h-10 bg-forest rounded-full flex items-center justify-center text-white">
+          <button className="w-10 h-10 bg-bronze rounded-full flex items-center justify-center text-white">
             <i className="fas fa-chevron-right" />
           </button>
           <div className="text-center">
@@ -43,7 +43,7 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
               key={ot.key}
               onClick={() => setOrderType(ot.key)}
               className={`flex-1 py-2 text-xs font-medium rounded-full transition-all
-                ${orderType === ot.key ? 'bg-forest text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                ${orderType === ot.key ? 'bg-bronze text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
             >
               {ot.label}
             </button>
@@ -60,7 +60,7 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
               placeholder="Name"
-              className="w-full bg-gray-50 rounded-xl px-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-forest/20"
+              className="w-full bg-gray-50 rounded-xl px-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-bronze/20"
             />
           </div>
           <div>
@@ -69,7 +69,7 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
               <select
                 value={tableId ?? ''}
                 onChange={(e) => setTableId(e.target.value ? Number(e.target.value) : null)}
-                className="w-full bg-gray-50 rounded-xl px-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-forest/20 appearance-none"
+                className="w-full bg-gray-50 rounded-xl px-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-bronze/20 appearance-none"
               >
                 <option value="">Select table</option>
                 {tables.map((t) => (
@@ -125,7 +125,7 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
         <button
           onClick={onPlaceOrder}
           disabled={items.length === 0 || isSubmitting}
-          className="w-full bg-forest hover:bg-forest-dark text-white rounded-full py-4 flex items-center justify-between px-6 transition-all shadow-lg shadow-forest/20 disabled:opacity-30 disabled:cursor-not-allowed"
+          className="w-full bg-bronze hover:bg-bronze-dark text-white rounded-full py-4 flex items-center justify-between px-6 transition-all shadow-lg shadow-bronze/20 disabled:opacity-30 disabled:cursor-not-allowed"
         >
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
