@@ -54,6 +54,7 @@ export interface Order {
   total_amount: number;
   created_at: string;
   items?: OrderItem[];
+  order_items?: OrderItem[];
   payment?: Payment;
   user?: User;
   table?: Table;
