@@ -3,10 +3,11 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreCategoryRequest;
+use App\Http\Requests\UpdateCategoryRequest;
 use App\Models\Category;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class CategoryController extends Controller
 {
@@ -15,20 +16,12 @@ class CategoryController extends Controller
     public function index(): JsonResponse
     {
         $categories = Category::where('is_active', true)->get();
-
         return $this->success($categories);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreCategoryRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
-
-        $category = Category::create($validated);
-
+        $category = Category::create($request->validated());
         return $this->created($category);
     }
 
@@ -37,23 +30,15 @@ class CategoryController extends Controller
         return $this->success($category);
     }
 
-    public function update(Request $request, Category $category): JsonResponse
+    public function update(UpdateCategoryRequest $request, Category $category): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
-            'is_active' => 'boolean',
-        ]);
-
-        $category->update($validated);
-
+        $category->update($request->validated());
         return $this->success($category);
     }
 
     public function destroy(Category $category): JsonResponse
     {
         $category->delete();
-
         return $this->noContent();
     }
 }

@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\StoreUserRequest;
+use App\Http\Requests\UpdateUserRequest;
 use App\Models\User;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -15,44 +17,28 @@ class UserController extends Controller
 
     public function index(): JsonResponse
     {
-        $users = User::all();
-
+        $users = User::select(['id', 'name', 'email', 'role', 'is_active', 'created_at'])->get();
         return $this->success($users);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreUserRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email',
-            'password' => 'required|string|min:8',
-            'role' => 'required|string|in:' . implode(',', User::ROLES),
-            'is_active' => 'boolean',
-        ]);
+        $data = $request->validated();
+        $data['password'] = Hash::make($data['password']);
 
-        $validated['password'] = Hash::make($validated['password']);
-
-        $user = User::create($validated);
-
+        $user = User::create($data);
         return $this->created($user);
     }
 
-    public function update(Request $request, User $user): JsonResponse
+    public function update(UpdateUserRequest $request, User $user): JsonResponse
     {
-        $validated = $request->validate([
-            'name' => 'sometimes|string|max:255',
-            'email' => 'sometimes|email|unique:users,email,' . $user->id,
-            'password' => 'sometimes|string|min:8',
-            'role' => 'sometimes|string|in:' . implode(',', User::ROLES),
-            'is_active' => 'boolean',
-        ]);
+        $data = $request->validated();
 
-        if (isset($validated['password'])) {
-            $validated['password'] = Hash::make($validated['password']);
+        if (isset($data['password'])) {
+            $data['password'] = Hash::make($data['password']);
         }
 
-        $user->update($validated);
-
+        $user->update($data);
         return $this->success($user);
     }
 
@@ -63,7 +49,6 @@ class UserController extends Controller
         }
 
         $user->update(['is_active' => !$user->is_active]);
-
         return $this->success($user);
     }
 }

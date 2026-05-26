@@ -3,7 +3,9 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
+use App\Http\Requests\StoreMenuItemRequest;
+use App\Http\Requests\UpdateMenuItemRequest;
+use App\Http\Requests\UpdateStockRequest;
 use App\Models\MenuItem;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
@@ -21,69 +23,54 @@ class MenuItemController extends Controller
             $query->where('category_id', $request->category_id);
         }
 
-        $menuItems = $query->paginate($request->per_page ?? 15);
+        if ($request->boolean('available_only')) {
+            $query->where('is_available', true);
+        }
+
+        $menuItems = $query->paginate($request->per_page ?? 50);
 
         return $this->success($menuItems);
     }
 
-    public function store(Request $request): JsonResponse
+    public function store(StoreMenuItemRequest $request): JsonResponse
     {
-        $validated = $request->validate([
-            'category_id' => 'required|exists:categories,id',
-            'name' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric|min:0',
-            'image' => 'nullable|string',
-            'is_available' => 'boolean',
-            'stock_qty' => 'integer|min:0',
-            'stock_min_threshold' => 'integer|min:0',
-        ]);
+        $data = $request->validated();
 
-        $menuItem = MenuItem::create($validated);
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('menu-items', 'public');
+        }
 
+        $menuItem = MenuItem::create($data);
         return $this->created($menuItem);
     }
 
     public function show(MenuItem $menuItem): JsonResponse
     {
         $menuItem->load('category');
-
         return $this->success($menuItem);
     }
 
-    public function update(Request $request, MenuItem $menuItem): JsonResponse
+    public function update(UpdateMenuItemRequest $request, MenuItem $menuItem): JsonResponse
     {
-        $validated = $request->validate([
-            'category_id' => 'sometimes|exists:categories,id',
-            'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
-            'price' => 'sometimes|numeric|min:0',
-            'image' => 'nullable|string',
-            'is_available' => 'boolean',
-            'stock_qty' => 'integer|min:0',
-            'stock_min_threshold' => 'integer|min:0',
-        ]);
+        $data = $request->validated();
 
-        $menuItem->update($validated);
+        if ($request->hasFile('image')) {
+            $data['image'] = $request->file('image')->store('menu-items', 'public');
+        }
 
+        $menuItem->update($data);
         return $this->success($menuItem);
     }
 
     public function destroy(MenuItem $menuItem): JsonResponse
     {
         $menuItem->delete();
-
         return $this->noContent();
     }
 
-    public function updateStock(Request $request, MenuItem $menuItem): JsonResponse
+    public function updateStock(UpdateStockRequest $request, MenuItem $menuItem): JsonResponse
     {
-        $validated = $request->validate([
-            'stock_qty' => 'required|integer|min:0',
-        ]);
-
-        $menuItem->update(['stock_qty' => $validated['stock_qty']]);
-
+        $menuItem->update(['stock_qty' => $request->validated()['stock_qty']]);
         return $this->success($menuItem);
     }
 }
