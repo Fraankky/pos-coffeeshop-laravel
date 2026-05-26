@@ -16,7 +16,7 @@ export function TableSelector({ onSelect, selected }: Props) {
 
   return (
     <div>
-      <label className="block text-sm font-medium text-gray-700 mb-2">Pilih Meja</label>
+      <label className="block text-sm font-medium text-cream/80 mb-2">Pilih Meja</label>
       <div className="grid grid-cols-5 gap-2">
         {tables.map((table) => {
           const isOccupied = table.status === 'occupied';
@@ -25,15 +25,15 @@ export function TableSelector({ onSelect, selected }: Props) {
               key={table.id}
               onClick={() => !isOccupied && onSelect(table.id)}
               disabled={isOccupied}
-              className={`p-3 rounded-lg border text-center transition text-sm
+              className={`p-3 rounded-xl border text-center transition-all duration-150 text-sm font-medium
                 ${selected === table.id
-                  ? 'bg-amber-700 text-white border-amber-700'
+                  ? 'bg-caramen text-white border-caramen shadow-lg'
                   : isOccupied
-                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed border-gray-200'
-                    : 'bg-white border-gray-300 hover:border-amber-300 cursor-pointer'}`}
+                    ? 'bg-mocha/20 text-cream/30 cursor-not-allowed border-mocha/20'
+                    : 'bg-espresso text-cream/60 border-mocha/30 hover:border-cream/30 hover:text-cream cursor-pointer'}`}
             >
-              <div className="font-bold">{table.table_number}</div>
-              <div className="text-xs opacity-75">{table.capacity} kursi</div>
+              <div className="font-bold text-base">{table.table_number}</div>
+              <div className="text-xs opacity-70">{table.capacity} kursi</div>
             </button>
           );
         })}

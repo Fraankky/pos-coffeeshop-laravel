@@ -8,10 +8,7 @@ export function MenuCatalog() {
   const { categories, items, selectedCategoryId, isLoading, fetchCategories, setSelectedCategory } = useMenuStore();
   const [selectedItem, setSelectedItem] = useState<MenuItem | null>(null);
 
-  useEffect(() => {
-    fetchCategories();
-  }, []);
-
+  useEffect(() => { fetchCategories(); }, []);
   useEffect(() => {
     if (categories.length > 0 && !selectedCategoryId) {
       setSelectedCategory(categories[0].id);
@@ -25,10 +22,10 @@ export function MenuCatalog() {
           <button
             key={cat.id}
             onClick={() => setSelectedCategory(cat.id)}
-            className={`px-4 py-1.5 rounded-full text-sm whitespace-nowrap border transition
+            className={`px-4 py-1.5 rounded-xl text-sm whitespace-nowrap font-medium transition-all duration-150
               ${selectedCategoryId === cat.id
-                ? 'bg-amber-700 text-white border-amber-700'
-                : 'bg-white border-gray-300 hover:border-amber-300 text-gray-700'}`}
+                ? 'bg-caramen text-white shadow-lg shadow-black/20'
+                : 'bg-espresso text-cream/60 hover:text-cream border border-mocha/30'}`}
           >
             {cat.name}
           </button>
@@ -38,11 +35,11 @@ export function MenuCatalog() {
       {isLoading ? (
         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
           {[...Array(8)].map((_, i) => (
-            <div key={i} className="bg-gray-100 rounded-lg h-40 animate-pulse" />
+            <div key={i} className="bg-mocha/30 rounded-2xl h-40 animate-pulse" />
           ))}
         </div>
       ) : items.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-400">
+        <div className="flex flex-col items-center justify-center py-12 text-cream/40">
           <span className="text-4xl mb-2">📭</span>
           <p className="text-sm">Tidak ada menu di kategori ini</p>
         </div>
@@ -55,10 +52,7 @@ export function MenuCatalog() {
       )}
 
       {selectedItem && (
-        <ItemCustomizationModal
-          item={selectedItem}
-          onClose={() => setSelectedItem(null)}
-        />
+        <ItemCustomizationModal item={selectedItem} onClose={() => setSelectedItem(null)} />
       )}
     </div>
   );

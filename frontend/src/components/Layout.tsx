@@ -1,63 +1,81 @@
-import { Link, Outlet, useNavigate } from 'react-router-dom';
+import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
+
+const navItems = {
+  kasir: [
+    { to: '/kasir', label: 'Kasir', icon: '🛒' },
+  ],
+  barista: [
+    { to: '/barista', label: 'Orders', icon: '📋' },
+  ],
+  admin: [
+    { to: '/admin', label: 'Dashboard', icon: '📊' },
+    { to: '/admin/menu', label: 'Menu', icon: '☕' },
+    { to: '/admin/users', label: 'Users', icon: '👥' },
+    { to: '/admin/tables', label: 'Tables', icon: '🪑' },
+    { to: '/admin/transactions', label: 'Transactions', icon: '🧾' },
+  ],
+} as const;
 
 export function Layout() {
   const { user, logout } = useAuthStore();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleLogout = async () => {
     await logout();
     navigate('/login');
   };
 
-  const roleLabel = user?.role === 'admin' ? 'Admin' : user?.role === 'kasir' ? 'Kasir' : 'Barista';
+  const roleKey = user?.role ?? 'kasir';
+  const items = navItems[roleKey as keyof typeof navItems] ?? [];
+  const roleLabel = roleKey === 'admin' ? 'Admin' : roleKey === 'kasir' ? 'Kasir' : 'Barista';
 
   return (
-    <div className="min-h-screen bg-gray-50 flex">
-      <aside className="w-64 bg-white border-r border-gray-200 p-4 flex flex-col gap-4">
-        <div className="text-lg font-bold text-amber-800">POS Coffee</div>
-        <div className="text-sm text-gray-500">Logged in as: {user?.name} ({roleLabel})</div>
-        <nav className="flex flex-col gap-2 mt-4">
-          {user?.role === 'kasir' && (
-            <Link to="/kasir" className="px-3 py-2 rounded hover:bg-amber-50 text-gray-700 hover:text-amber-800">
-              Kasir
-            </Link>
-          )}
-          {user?.role === 'barista' && (
-            <Link to="/barista" className="px-3 py-2 rounded hover:bg-amber-50 text-gray-700 hover:text-amber-800">
-              Orders
-            </Link>
-          )}
-          {user?.role === 'admin' && (
-            <>
-              <Link to="/admin" className="px-3 py-2 rounded hover:bg-amber-50 text-gray-700 hover:text-amber-800">
-                Dashboard
+    <div className="min-h-screen flex">
+      <aside className="w-64 bg-roast flex flex-col flex-shrink-0">
+        <div className="px-5 pt-5 pb-4 border-b border-mocha/40">
+          <Link to="/" className="flex items-center gap-2">
+            <span className="text-xl">☕</span>
+            <span className="text-xl font-extrabold text-cream tracking-tight">POS Coffee</span>
+          </Link>
+        </div>
+
+        <div className="px-5 py-3 text-xs text-cream/50 border-b border-mocha/20">
+          {user?.name} · <span className="capitalize">{roleLabel}</span>
+        </div>
+
+        <nav className="flex-1 px-3 py-4 space-y-1">
+          {items.map((item) => {
+            const isActive = location.pathname === item.to;
+            return (
+              <Link
+                key={item.to}
+                to={item.to}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
+                  ${isActive
+                    ? 'bg-latte text-foam shadow-lg shadow-black/20'
+                    : 'text-cream/60 hover:text-cream hover:bg-espresso'}`}
+              >
+                <span className="text-base">{item.icon}</span>
+                {item.label}
               </Link>
-              <Link to="/admin/menu" className="px-3 py-2 rounded hover:bg-amber-50 text-gray-700 hover:text-amber-800">
-                Menu
-              </Link>
-              <Link to="/admin/users" className="px-3 py-2 rounded hover:bg-amber-50 text-gray-700 hover:text-amber-800">
-                Users
-              </Link>
-              <Link to="/admin/tables" className="px-3 py-2 rounded hover:bg-amber-50 text-gray-700 hover:text-amber-800">
-                Tables
-              </Link>
-              <Link to="/admin/transactions" className="px-3 py-2 rounded hover:bg-amber-50 text-gray-700 hover:text-amber-800">
-                Transactions
-              </Link>
-            </>
-          )}
+            );
+          })}
         </nav>
-        <div className="mt-auto">
+
+        <div className="px-3 py-4 border-t border-mocha/20">
           <button
             onClick={handleLogout}
-            className="w-full px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-cream/50 hover:text-cream hover:bg-espresso transition-all duration-150"
           >
+            <span className="text-base">🚪</span>
             Logout
           </button>
         </div>
       </aside>
-      <main className="flex-1 p-6 overflow-auto">
+
+      <main className="flex-1 p-6 overflow-auto bg-[#12100c]">
         <Outlet />
       </main>
     </div>

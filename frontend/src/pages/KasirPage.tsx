@@ -11,7 +11,7 @@ import { useCartStore } from '@/stores/cartStore';
 import api from '@/lib/api';
 import type { Order } from '@/types';
 
-type Step = 'menu' | 'checkout' | 'payment' | 'receipt';
+type Step = 'menu' | 'checkout' | 'receipt';
 
 export function KasirPage() {
   const { items, subtotal, clearCart } = useCartStore();
@@ -24,15 +24,11 @@ export function KasirPage() {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState('');
 
-  const handleCheckout = () => {
-    setStep('checkout');
-    setError('');
-  };
+  const handleCheckout = () => { setStep('checkout'); setError(''); };
 
   const handleSubmitOrder = async () => {
     setIsSubmitting(true);
     setError('');
-
     try {
       const payload = {
         order_type: orderType,
@@ -45,15 +41,12 @@ export function KasirPage() {
           customization_notes: i.notes || null,
         })),
       };
-
       const { data: orderRes } = await api.post('/orders', payload);
       const order = orderRes.data;
-
       const { data: payRes } = await api.post(`/orders/${order.id}/payment`, {
         method: paymentMethod,
         amount_paid: paymentMethod === 'cash' ? amountPaid : subtotal(),
       });
-
       setCurrentOrder({ ...order, payment: payRes.data });
       setStep('receipt');
       clearCart();
@@ -67,15 +60,15 @@ export function KasirPage() {
   if (step === 'checkout') {
     return (
       <div className="max-w-lg mx-auto py-8">
-        <button onClick={() => setStep('menu')} className="text-sm text-gray-500 mb-4 hover:text-amber-700">
+        <button onClick={() => setStep('menu')} className="text-sm text-cream/50 mb-4 hover:text-cream transition-colors">
           ← Kembali ke menu
         </button>
 
-        <div className="bg-white rounded-lg shadow-sm border p-6 space-y-4">
-          <h2 className="text-lg font-bold">Checkout</h2>
+        <div className="bg-espresso rounded-2xl border border-mocha/30 p-6 space-y-4 shadow-lg shadow-black/20">
+          <h2 className="text-lg font-bold text-foam">Checkout</h2>
 
           {error && (
-            <div className="bg-red-50 text-red-600 px-4 py-2 rounded text-sm">{error}</div>
+            <div className="bg-red-500/10 border border-red-500/20 text-red-400 px-4 py-3 rounded-xl text-sm">{error}</div>
           )}
 
           <OrderTypeSelector orderType={orderType} onChange={setOrderType} />
@@ -85,57 +78,41 @@ export function KasirPage() {
           )}
 
           {orderType === 'dine_in' && !tableId && (
-            <p className="text-xs text-red-500">Pilih meja terlebih dahulu</p>
+            <p className="text-xs text-red-400">Pilih meja terlebih dahulu</p>
           )}
 
-          <div className="bg-gray-50 rounded-lg p-4 space-y-1 text-sm">
+          <div className="bg-mocha/20 rounded-2xl p-4 space-y-1 text-sm">
             {items.map((item, i) => (
-              <div key={i} className="flex justify-between">
+              <div key={i} className="flex justify-between text-milk">
                 <span>{item.menuItem.name} x{item.quantity}</span>
-                <span>Rp {(item.menuItem.price * item.quantity).toLocaleString('id-ID')}</span>
+                <span className="text-cream">Rp {(item.menuItem.price * item.quantity).toLocaleString('id-ID')}</span>
               </div>
             ))}
-            <hr className="my-2" />
+            <hr className="my-2 border-mocha/30" />
             <div className="flex justify-between font-bold">
-              <span>Total</span>
-              <span className="text-amber-700">Rp {subtotal().toLocaleString('id-ID')}</span>
+              <span className="text-foam">Total</span>
+              <span className="text-caramen">Rp {subtotal().toLocaleString('id-ID')}</span>
             </div>
           </div>
 
-          <PaymentMethodSelector
-            method={paymentMethod}
-            onCash={() => setPaymentMethod('cash')}
-            onQris={() => setPaymentMethod('qris_simulated')}
-          />
+          <PaymentMethodSelector method={paymentMethod} onCash={() => setPaymentMethod('cash')} onQris={() => setPaymentMethod('qris_simulated')} />
 
           {paymentMethod === 'cash' && (
-            <CashPayment
-              total={subtotal()}
-              amountPaid={amountPaid}
-              onChange={setAmountPaid}
-              onSubmit={handleSubmitOrder}
-            />
+            <CashPayment total={subtotal()} amountPaid={amountPaid} onChange={setAmountPaid} onSubmit={handleSubmitOrder} />
           )}
 
           {paymentMethod === 'qris_simulated' && (
             <QRISPayment total={subtotal()} onConfirm={handleSubmitOrder} />
           )}
 
-          {isSubmitting && (
-            <p className="text-center text-sm text-gray-500">Memproses...</p>
-          )}
+          {isSubmitting && <p className="text-center text-sm text-cream/50">Memproses...</p>}
         </div>
       </div>
     );
   }
 
   if (step === 'receipt' && currentOrder) {
-    return (
-      <ReceiptPreview
-        order={currentOrder}
-        onClose={() => setStep('menu')}
-      />
-    );
+    return <ReceiptPreview order={currentOrder} onClose={() => setStep('menu')} />;
   }
 
   return (

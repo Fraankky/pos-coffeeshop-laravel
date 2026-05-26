@@ -13,19 +13,21 @@ export function MenuItemCard({ item, onAdd }: Props) {
     <button
       onClick={() => !isOutOfStock && onAdd(item)}
       disabled={isOutOfStock}
-      className={`bg-white rounded-lg shadow-sm border p-4 text-left transition hover:shadow-md
-        ${isOutOfStock ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer hover:border-amber-300'}`}
+      className={`bg-espresso rounded-2xl border border-mocha/30 p-4 text-left transition-all duration-200
+        ${isOutOfStock
+          ? 'opacity-30 grayscale cursor-not-allowed'
+          : 'cursor-pointer hover:border-cream/30 hover:scale-[1.02] hover:shadow-lg hover:shadow-black/30'}`}
     >
-      <div className="h-24 bg-gradient-to-br from-amber-100 to-amber-200 rounded mb-3 flex items-center justify-center">
+      <div className="h-24 bg-mocha/30 rounded-xl mb-3 flex items-center justify-center">
         <span className="text-3xl">{getItemEmoji(item.name)}</span>
       </div>
-      <h3 className="font-semibold text-gray-800 text-sm">{item.name}</h3>
-      <p className="text-amber-700 font-bold mt-1">Rp {item.price.toLocaleString('id-ID')}</p>
+      <h3 className="font-semibold text-milk text-sm">{item.name}</h3>
+      <p className="text-cream font-bold mt-1">Rp {item.price.toLocaleString('id-ID')}</p>
       {isLowStock && (
-        <p className="text-xs text-red-500 mt-1">Stok: {item.stock_qty}</p>
+        <p className="text-xs text-red-400 mt-1">Stok: {item.stock_qty}</p>
       )}
       {isOutOfStock && (
-        <p className="text-xs text-red-500 mt-1">Habis</p>
+        <p className="text-xs text-red-400 mt-1">Habis</p>
       )}
     </button>
   );
