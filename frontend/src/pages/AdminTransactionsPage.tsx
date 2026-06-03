@@ -47,7 +47,7 @@ export function AdminTransactionsPage() {
             <tr className="border-b border-mocha/30">
               <th className="text-left px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">#</th>
               <th className="text-left px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Tanggal</th>
-              <th className="text-left px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Kasir</th>
+              <th className="text-left px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Staff</th>
               <th className="text-center px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Tipe</th>
               <th className="text-center px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Status</th>
               <th className="text-right px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Total</th>
@@ -83,7 +83,7 @@ export function AdminTransactionsPage() {
             <h2 className="text-lg font-bold text-foam mb-4">Order #{selected.id}</h2>
             <div className="space-y-2 text-sm">
               <div className="flex justify-between"><span className="text-cream/60">Tanggal</span><span className="text-milk">{new Date(selected.created_at).toLocaleString('id-ID')}</span></div>
-              <div className="flex justify-between"><span className="text-cream/60">Kasir</span><span className="text-milk">{selected.user?.name ?? '-'}</span></div>
+              <div className="flex justify-between"><span className="text-cream/60">Staff</span><span className="text-milk">{selected.user?.name ?? '-'}</span></div>
               <div className="flex justify-between"><span className="text-cream/60">Tipe</span><span className="text-milk capitalize">{selected.order_type === 'dine_in' ? 'Dine-In' : 'Takeaway'}</span></div>
               {selected.table && <div className="flex justify-between"><span className="text-cream/60">Meja</span><span className="text-milk">{selected.table.table_number}</span></div>}
               <hr className="border-mocha/30 my-2" />

@@ -18,14 +18,9 @@ class DatabaseSeeder extends Seeder
             'email' => 'admin@pos.coffee',
         ]);
 
-        User::factory()->kasir()->create([
-            'name' => 'Kasir 1',
-            'email' => 'kasir@pos.coffee',
-        ]);
-
-        User::factory()->barista()->create([
-            'name' => 'Barista 1',
-            'email' => 'barista@pos.coffee',
+        User::factory()->staff()->create([
+            'name' => 'Staff 1',
+            'email' => 'staff@pos.coffee',
         ]);
 
         // Demo categories

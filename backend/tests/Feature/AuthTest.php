@@ -15,13 +15,13 @@ class AuthTest extends TestCase
     public function test_user_can_login_with_valid_credentials(): void
     {
         $user = User::factory()->create([
-            'email' => 'kasir@test.com',
+            'email' => 'staff@test.com',
             'password' => bcrypt('password123'),
-            'role' => 'kasir',
+            'role' => 'staff',
         ]);
 
         $response = $this->postJson($this->loginUrl, [
-            'email' => 'kasir@test.com',
+            'email' => 'staff@test.com',
             'password' => 'password123',
         ]);
 
@@ -38,12 +38,12 @@ class AuthTest extends TestCase
     public function test_user_cannot_login_with_invalid_password(): void
     {
         User::factory()->create([
-            'email' => 'kasir@test.com',
+            'email' => 'staff@test.com',
             'password' => bcrypt('password123'),
         ]);
 
         $response = $this->postJson($this->loginUrl, [
-            'email' => 'kasir@test.com',
+            'email' => 'staff@test.com',
             'password' => 'wrongpassword',
         ]);
 
@@ -131,9 +131,9 @@ class AuthTest extends TestCase
         $this->assertEquals(0, $user->tokens()->count());
     }
 
-    public function test_user_with_kasir_role_can_access_kasir_endpoints(): void
+    public function test_user_with_staff_role_can_access_staff_endpoints(): void
     {
-        $user = User::factory()->kasir()->create();
+        $user = User::factory()->staff()->create();
         $token = $user->createToken('test-token')->plainTextToken;
 
         $response = $this->withHeader('Authorization', "Bearer $token")

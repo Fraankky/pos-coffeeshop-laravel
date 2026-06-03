@@ -13,14 +13,14 @@ class CategoryTest extends TestCase
 
     private string $baseUrl = '/api/v1/categories';
     private User $admin;
-    private User $kasir;
+    private User $staff;
     private string $token;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->admin = User::factory()->admin()->create();
-        $this->kasir = User::factory()->kasir()->create();
+        $this->staff = User::factory()->staff()->create();
         $this->token = $this->admin->createToken('test')->plainTextToken;
     }
 

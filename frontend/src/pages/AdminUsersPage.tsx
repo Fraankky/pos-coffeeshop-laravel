@@ -6,7 +6,7 @@ export function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'kasir' });
+  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'staff' });
 
   const fetchUsers = useCallback(async () => {
     const { data } = await api.get('/users');
@@ -15,7 +15,7 @@ export function AdminUsersPage() {
 
   useEffect(() => { fetchUsers(); }, [fetchUsers]);
 
-  const openCreate = () => { setForm({ name: '', email: '', password: '', role: 'kasir' }); setEditing(null); setShowForm(true); };
+  const openCreate = () => { setForm({ name: '', email: '', password: '', role: 'staff' }); setEditing(null); setShowForm(true); };
   const openEdit = (user: User) => { setForm({ name: user.name, email: user.email, password: '', role: user.role }); setEditing(user); setShowForm(true); };
 
   const handleSave = async () => {
@@ -34,8 +34,7 @@ export function AdminUsersPage() {
 
   const roleColors: Record<string, string> = {
     admin: 'bg-purple-500/10 text-purple-400',
-    barista: 'bg-blue-500/10 text-blue-400',
-    kasir: 'bg-green-500/10 text-green-400',
+    staff: 'bg-green-500/10 text-green-400',
   };
 
   return (
@@ -60,8 +59,7 @@ export function AdminUsersPage() {
                 className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk placeholder-cream/30 focus:outline-none focus:ring-2 focus:ring-caramen" />
               <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}
                 className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk focus:outline-none focus:ring-2 focus:ring-caramen">
-                <option value="kasir">Kasir</option>
-                <option value="barista">Barista</option>
+                <option value="staff">Staff</option>
                 <option value="admin">Admin</option>
               </select>
             </div>

@@ -3,7 +3,7 @@ import api from '@/lib/api';
 import { usePolling } from '@/hooks/usePolling';
 import type { Order } from '@/types';
 
-export function BaristaPage() {
+export function QueuePage() {
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -51,7 +51,7 @@ export function BaristaPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-extrabold text-foam tracking-tight">Barista Queue</h1>
+        <h1 className="text-2xl font-extrabold text-foam tracking-tight">Antrian Pesanan</h1>
         <span className="text-sm text-cream/50">
           {orders.length} pesanan · auto-refresh 5dtk
         </span>
@@ -61,7 +61,7 @@ export function BaristaPage() {
         <div className="flex flex-col items-center justify-center py-20 text-cream/40">
           <span className="text-5xl mb-4">✅</span>
           <p className="text-lg text-foam font-medium">Semua pesanan selesai</p>
-          <p className="text-sm">Tunggu pesanan baru dari kasir</p>
+          <p className="text-sm">Tunggu pesanan baru dari POS staff</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

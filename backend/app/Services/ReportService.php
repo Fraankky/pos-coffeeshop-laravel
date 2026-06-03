@@ -94,7 +94,7 @@ class ReportService
 
     public function generateCsv($orders): string
     {
-        $csv = "Order ID,Date,Cashier,Table,Items,Total Amount,Payment Method,Payment Status\n";
+        $csv = "Order ID,Date,Staff,Table,Items,Total Amount,Payment Method,Payment Status\n";
 
         foreach ($orders as $order) {
             $items = $order->orderItems->map(fn($i) => "{$i->menuItem?->name} x{$i->quantity}")->implode('; ');

@@ -43,20 +43,17 @@ cd frontend && npm install && npm run dev
 | Role | Email | Password |
 |------|-------|----------|
 | Admin | admin@pos.coffee | password |
-| Kasir | kasir@pos.coffee | password |
-| Barista | barista@pos.coffee | password |
+| Staff | staff@pos.coffee | password |
 
 ## Features
 
-### Kasir
+### Staff POS
 - Menu catalog with category tabs
 - Item customization (size, toppings, notes)
 - Cart management with quantity controls
 - Cash payment with auto change calculation
 - QRIS simulation payment
 - Digital receipt with print support
-
-### Barista
 - Real-time order queue (5s polling)
 - Order status management (Proses → Selesai → Batal)
 - Age indicator (green/yellow/red)
@@ -110,6 +107,7 @@ See `docs/` for full API documentation.
 - **Stock management**: Auto-deduct on order, auto-restore on cancel
 - **Table status**: Auto-update on payment (occupied) and completion (available)
 - **Polling over WebSocket**: Simpler implementation for campus project scope
+- **Staff workflow over kasir/barista roles**: Small coffee shop operations often combine cashier and barista work, so the app uses one `staff` role with order, payment, and queue access.
 
 ## Test Suite
 

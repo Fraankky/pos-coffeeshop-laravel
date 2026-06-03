@@ -13,13 +13,11 @@ class User extends Authenticatable
     /** @use HasFactory<UserFactory> */
     use HasApiTokens, HasFactory, Notifiable;
 
-    public const ROLE_KASIR = 'kasir';
-    public const ROLE_BARISTA = 'barista';
+    public const ROLE_STAFF = 'staff';
     public const ROLE_ADMIN = 'admin';
 
     public const ROLES = [
-        self::ROLE_KASIR,
-        self::ROLE_BARISTA,
+        self::ROLE_STAFF,
         self::ROLE_ADMIN,
     ];
 
@@ -50,14 +48,9 @@ class User extends Authenticatable
         return $this->role === self::ROLE_ADMIN;
     }
 
-    public function isKasir(): bool
+    public function isStaff(): bool
     {
-        return $this->role === self::ROLE_KASIR;
-    }
-
-    public function isBarista(): bool
-    {
-        return $this->role === self::ROLE_BARISTA;
+        return $this->role === self::ROLE_STAFF;
     }
 
     public function orders()

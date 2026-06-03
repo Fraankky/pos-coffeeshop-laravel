@@ -35,14 +35,14 @@ class UserManagementTest extends TestCase
     public function test_create_user(): void
     {
         $res = $this->withToken($this->token)->postJson($this->baseUrl, [
-            'name' => 'New Kasir',
-            'email' => 'newkasir@test.com',
+            'name' => 'New Staff',
+            'email' => 'newstaff@test.com',
             'password' => 'password123',
-            'role' => 'kasir',
+            'role' => 'staff',
         ]);
 
         $res->assertStatus(201);
-        $this->assertDatabaseHas('users', ['email' => 'newkasir@test.com', 'role' => 'kasir']);
+        $this->assertDatabaseHas('users', ['email' => 'newstaff@test.com', 'role' => 'staff']);
     }
 
     public function test_create_user_validates_role(): void
@@ -65,7 +65,7 @@ class UserManagementTest extends TestCase
             'name' => 'Test',
             'email' => 'existing@test.com',
             'password' => 'password123',
-            'role' => 'kasir',
+            'role' => 'staff',
         ]);
 
         $res->assertStatus(422);
@@ -73,7 +73,7 @@ class UserManagementTest extends TestCase
 
     public function test_update_user(): void
     {
-        $user = User::factory()->kasir()->create();
+        $user = User::factory()->staff()->create();
 
         $res = $this->withToken($this->token)->putJson("{$this->baseUrl}/{$user->id}", [
             'name' => 'Updated Name',
@@ -85,7 +85,7 @@ class UserManagementTest extends TestCase
 
     public function test_toggle_active(): void
     {
-        $user = User::factory()->kasir()->create();
+        $user = User::factory()->staff()->create();
 
         $res = $this->withToken($this->token)->patchJson("{$this->baseUrl}/{$user->id}/toggle");
 
@@ -100,12 +100,12 @@ class UserManagementTest extends TestCase
         $res->assertStatus(403);
     }
 
-    public function test_kasir_cannot_access_user_management(): void
+    public function test_staff_cannot_access_user_management(): void
     {
-        $kasir = User::factory()->kasir()->create();
-        $kasirToken = $kasir->createToken('test')->plainTextToken;
+        $staff = User::factory()->staff()->create();
+        $staffToken = $staff->createToken('test')->plainTextToken;
 
-        $res = $this->withToken($kasirToken)->getJson($this->baseUrl);
+        $res = $this->withToken($staffToken)->getJson($this->baseUrl);
 
         $res->assertStatus(403);
     }

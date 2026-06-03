@@ -13,20 +13,20 @@ class PaymentTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User $kasir;
+    private User $staff;
     private Order $order;
     private string $token;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->kasir = User::factory()->kasir()->create();
-        $this->token = $this->kasir->createToken('test')->plainTextToken;
+        $this->staff = User::factory()->staff()->create();
+        $this->token = $this->staff->createToken('test')->plainTextToken;
 
         $category = Category::factory()->create();
         $item = MenuItem::factory()->create(['category_id' => $category->id, 'price' => 25000, 'stock_qty' => 10]);
 
-        $this->order = $this->kasir->orders()->create([
+        $this->order = $this->staff->orders()->create([
             'order_type' => 'takeaway',
             'status' => 'received',
             'total_amount' => 50000,

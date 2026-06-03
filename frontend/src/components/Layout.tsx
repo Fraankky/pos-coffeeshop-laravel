@@ -2,11 +2,8 @@ import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
 
 const navItems = {
-  kasir: [
-    { to: '/kasir', label: 'Kasir', icon: '🛒' },
-  ],
-  barista: [
-    { to: '/barista', label: 'Orders', icon: '📋' },
+  staff: [
+    { to: '/staff', label: 'Staff POS', icon: '🛒' },
   ],
   admin: [
     { to: '/admin', label: 'Dashboard', icon: '📊' },
@@ -27,9 +24,9 @@ export function Layout() {
     navigate('/login');
   };
 
-  const roleKey = user?.role ?? 'kasir';
+  const roleKey = user?.role ?? 'staff';
   const items = navItems[roleKey as keyof typeof navItems] ?? [];
-  const roleLabel = roleKey === 'admin' ? 'Admin' : roleKey === 'kasir' ? 'Kasir' : 'Barista';
+  const roleLabel = roleKey === 'admin' ? 'Admin' : 'Staff';
 
   return (
     <div className="min-h-screen flex">

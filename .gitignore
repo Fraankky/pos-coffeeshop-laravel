@@ -1,6 +1,6 @@
-/docs
 /vendor
 /node_modules
+/docs/*.pdf
 /.phpunit.cache
 /.env
 /.env.backup

@@ -28,7 +28,7 @@ const getApiErrorMessage = (error: unknown, fallback: string) => {
   return fallback;
 };
 
-export function KasirPage() {
+export function OrderPage() {
   const { items, addItem, clearCart } = useCartStore();
   const { tableId, orderType, setTables, setStep, resetCheckout } = useCashierStore();
   const { user } = useAuthStore();
@@ -194,8 +194,8 @@ export function KasirPage() {
               className="w-7 h-7 rounded-full"
             />
             <div className="text-sm hidden sm:block">
-              <p className="font-semibold text-gray-700 text-xs leading-tight">{user?.name || 'Cashier'}</p>
-              <p className="text-[10px] text-gray-400">Cashier</p>
+              <p className="font-semibold text-gray-700 text-xs leading-tight">{user?.name || 'Staff'}</p>
+              <p className="text-[10px] text-gray-400">Staff</p>
             </div>
           </div>
         </div>

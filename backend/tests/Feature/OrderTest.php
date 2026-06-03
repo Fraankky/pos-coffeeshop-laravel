@@ -13,15 +13,15 @@ class OrderTest extends TestCase
 {
     use RefreshDatabase;
 
-    private User $kasir;
+    private User $staff;
     private MenuItem $item;
     private string $token;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->kasir = User::factory()->kasir()->create();
-        $this->token = $this->kasir->createToken('test')->plainTextToken;
+        $this->staff = User::factory()->staff()->create();
+        $this->token = $this->staff->createToken('test')->plainTextToken;
 
         $category = Category::factory()->create();
         $this->item = MenuItem::factory()->create([
@@ -146,7 +146,7 @@ class OrderTest extends TestCase
 
     private function createOrder(): mixed
     {
-        return $this->kasir->orders()->create([
+        return $this->staff->orders()->create([
             'order_type' => 'takeaway',
             'status' => 'received',
             'total_amount' => $this->item->price,

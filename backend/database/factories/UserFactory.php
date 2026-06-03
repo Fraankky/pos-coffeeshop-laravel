@@ -18,30 +18,23 @@ class UserFactory extends Factory
             'email' => fake()->unique()->safeEmail(),
             'email_verified_at' => now(),
             'password' => static::$password ??= Hash::make('password'),
-            'role' => 'kasir',
+            'role' => User::ROLE_STAFF,
             'is_active' => true,
             'remember_token' => Str::random(10),
         ];
     }
 
-    public function kasir(): static
+    public function staff(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role' => 'kasir',
-        ]);
-    }
-
-    public function barista(): static
-    {
-        return $this->state(fn (array $attributes) => [
-            'role' => 'barista',
+            'role' => User::ROLE_STAFF,
         ]);
     }
 
     public function admin(): static
     {
         return $this->state(fn (array $attributes) => [
-            'role' => 'admin',
+            'role' => User::ROLE_ADMIN,
         ]);
     }
 
