@@ -2,6 +2,7 @@ import { create } from 'zustand';
 
 export interface CartItem {
   id: string;
+  menuItemId: number;
   name: string;
   price: number;
   quantity: number;
@@ -27,15 +28,16 @@ export const useCartStore = create<CartState>((set, get) => ({
   items: [],
 
   addItem: (item) => {
+    const itemWithNumberPrice = { ...item, price: Number(item.price) };
     const existing = get().items.findIndex(
-      (i) => i.name === item.name && i.size === item.size && i.notes === item.notes
+      (i) => i.menuItemId === itemWithNumberPrice.menuItemId && i.size === itemWithNumberPrice.size && i.notes === itemWithNumberPrice.notes
     );
     if (existing >= 0) {
       const items = [...get().items];
       items[existing].quantity += 1;
       set({ items });
     } else {
-      set({ items: [...get().items, { ...item, id: genId(), quantity: 1 }] });
+      set({ items: [...get().items, { ...itemWithNumberPrice, id: genId(), quantity: 1 }] });
     }
   },
 

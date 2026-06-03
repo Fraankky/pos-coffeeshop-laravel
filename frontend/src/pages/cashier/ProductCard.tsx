@@ -5,6 +5,8 @@ interface Props {
   onAdd: () => void;
 }
 
+const formatCurrency = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
+
 export function ProductCard({ name, price, image, onAdd }: Props) {
   return (
     <div className="product-card bg-white rounded-2xl p-4 shadow-sm cursor-pointer hover:shadow-md transition-all duration-200 hover:-translate-y-0.5">
@@ -19,7 +21,7 @@ export function ProductCard({ name, price, image, onAdd }: Props) {
       <div className="flex items-center justify-between">
         <div>
           <h4 className="font-semibold text-gray-800 text-sm">{name}</h4>
-          <p className="text-bronze font-bold">${price.toFixed(1)}</p>
+          <p className="text-bronze font-bold">{formatCurrency(price)}</p>
         </div>
         <button
           onClick={(e) => { e.stopPropagation(); onAdd(); }}

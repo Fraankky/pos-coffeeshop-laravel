@@ -1,14 +1,31 @@
+import { useState, type ComponentType } from 'react';
+import QRCodeImport from 'react-qr-code';
 import { useCartStore } from '@/stores/cartStore';
 import { useCashierStore } from '@/stores/cashierStore';
-import { TAX_RATE, ORDER_TYPES } from '@/lib/constants';
+import { ORDER_TYPES } from '@/lib/constants';
 import { OrderItemRow } from './OrderItemRow';
+import type { Order } from '@/types';
 
 interface Props {
+  pendingOrder: Order | null;
   onPlaceOrder: () => void;
+  onConfirmPayment: (method: 'cash' | 'qris_simulated', amountPaid: number) => void;
   isSubmitting: boolean;
+  isPaying: boolean;
 }
 
-export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
+type QRCodeProps = {
+  value: string;
+  size?: number;
+};
+
+const QRCode = (
+  (QRCodeImport as unknown as { default?: ComponentType<QRCodeProps> }).default ?? QRCodeImport
+) as ComponentType<QRCodeProps>;
+
+const formatCurrency = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
+
+export function ReceiptSidebar({ pendingOrder, onPlaceOrder, onConfirmPayment, isSubmitting, isPaying }: Props) {
   const { items, updateQuantity, removeItem } = useCartStore();
   const {
     orderType, setOrderType,
@@ -16,10 +33,19 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
     tableId, setTableId,
     tables,
   } = useCashierStore();
+  const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qris_simulated'>('cash');
+  const [cashAmount, setCashAmount] = useState('');
 
-  const subtotal = items.reduce((sum, i) => sum + i.price * i.quantity, 0);
-  const tax = subtotal * TAX_RATE;
-  const total = subtotal + tax;
+  const subtotal = items.reduce((sum, i) => sum + Number(i.price) * i.quantity, 0);
+  const total = pendingOrder ? Number(pendingOrder.total_amount) : subtotal;
+  const cashPaid = Number(cashAmount || 0);
+  const changeAmount = Math.max(0, cashPaid - total);
+  const isPaymentReady = paymentMethod === 'qris_simulated' || cashPaid >= total;
+  const qrisPayload = JSON.stringify({ order_id: pendingOrder?.id, amount: total, method: 'qris_simulated' });
+
+  const handleConfirmPayment = () => {
+    onConfirmPayment(paymentMethod, paymentMethod === 'qris_simulated' ? total : cashPaid);
+  };
 
   return (
     <div className="w-96 bg-white rounded-2xl shadow-sm flex flex-col h-[calc(100vh-100px)]">
@@ -42,8 +68,9 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
             <button
               key={ot.key}
               onClick={() => setOrderType(ot.key)}
+              disabled={!!pendingOrder}
               className={`flex-1 py-2 text-xs font-medium rounded-full transition-all
-                ${orderType === ot.key ? 'bg-bronze text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+                ${orderType === ot.key ? 'bg-bronze text-white shadow-sm' : 'text-gray-500 hover:text-gray-700'} disabled:cursor-not-allowed disabled:opacity-70`}
             >
               {ot.label}
             </button>
@@ -59,8 +86,9 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
               type="text"
               value={customerName}
               onChange={(e) => setCustomerName(e.target.value)}
+              disabled={!!pendingOrder}
               placeholder="Name"
-              className="w-full bg-gray-50 rounded-xl px-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-bronze/20"
+              className="w-full bg-gray-50 rounded-xl px-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-bronze/20 disabled:cursor-not-allowed disabled:opacity-70"
             />
           </div>
           <div>
@@ -69,7 +97,8 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
               <select
                 value={tableId ?? ''}
                 onChange={(e) => setTableId(e.target.value ? Number(e.target.value) : null)}
-                className="w-full bg-gray-50 rounded-xl px-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-bronze/20 appearance-none"
+                disabled={!!pendingOrder}
+                className="w-full bg-gray-50 rounded-xl px-3 py-2 text-sm border-none focus:outline-none focus:ring-2 focus:ring-bronze/20 appearance-none disabled:cursor-not-allowed disabled:opacity-70"
               >
                 <option value="">Select table</option>
                 {tables.map((t) => (
@@ -97,6 +126,7 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
                 item={item}
                 onUpdateQty={updateQuantity}
                 onRemove={removeItem}
+                disabled={!!pendingOrder}
               />
             ))}
           </div>
@@ -104,40 +134,101 @@ export function ReceiptSidebar({ onPlaceOrder, isSubmitting }: Props) {
       </div>
 
       <div className="px-5 py-4 border-t border-gray-100">
-        <h4 className="text-xs text-gray-500 mb-3">Payment Details</h4>
+        <h4 className="text-xs text-gray-500 mb-3">{pendingOrder ? `Payment Order #${pendingOrder.id}` : 'Payment Details'}</h4>
         <div className="space-y-2">
           <div className="flex justify-between text-sm">
             <span className="text-gray-500">Subtotal</span>
-            <span className="font-semibold text-gray-800">${subtotal.toFixed(1)}</span>
-          </div>
-          <div className="flex justify-between text-sm">
-            <span className="text-gray-500">Tax</span>
-            <span className="font-semibold text-gray-800">${tax.toFixed(1)}</span>
+            <span className="font-semibold text-gray-800">{formatCurrency(subtotal)}</span>
           </div>
           <div className="flex justify-between text-base pt-2 border-t border-gray-100">
             <span className="font-semibold text-gray-800">Total</span>
-            <span className="font-bold text-gray-800">${total.toFixed(1)}</span>
+            <span className="font-bold text-gray-800">{formatCurrency(total)}</span>
           </div>
         </div>
+
+        {pendingOrder && (
+          <div className="mt-4 space-y-4 animate-in slide-in-from-top-2">
+            <div className="grid grid-cols-2 gap-2">
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('cash')}
+                className={`rounded-xl px-3 py-2 text-sm font-semibold border transition-all ${paymentMethod === 'cash' ? 'bg-bronze text-white border-bronze' : 'bg-gray-50 text-gray-600 border-gray-100 hover:border-bronze/30'}`}
+              >
+                Cash
+              </button>
+              <button
+                type="button"
+                onClick={() => setPaymentMethod('qris_simulated')}
+                className={`rounded-xl px-3 py-2 text-sm font-semibold border transition-all ${paymentMethod === 'qris_simulated' ? 'bg-bronze text-white border-bronze' : 'bg-gray-50 text-gray-600 border-gray-100 hover:border-bronze/30'}`}
+              >
+                QRIS
+              </button>
+            </div>
+
+            {paymentMethod === 'cash' ? (
+              <div className="space-y-2">
+                <label className="text-xs text-gray-500 block">Nominal dibayar</label>
+                <input
+                  type="number"
+                  min={total}
+                  value={cashAmount}
+                  placeholder={String(total)}
+                  onChange={(e) => setCashAmount(e.target.value)}
+                  className="w-full bg-gray-50 rounded-xl px-3 py-2 text-sm border border-gray-100 focus:outline-none focus:ring-2 focus:ring-bronze/20"
+                />
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Kembalian</span>
+                  <span className="font-semibold text-gray-800">{formatCurrency(changeAmount)}</span>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center gap-3 bg-gray-50 rounded-2xl p-4 border border-gray-100">
+                <div className="bg-white p-3 rounded-xl shadow-sm">
+                  <QRCode value={qrisPayload} size={132} />
+                </div>
+                <p className="text-xs text-gray-500 text-center">Scan QRIS simulasi untuk order #{pendingOrder.id}</p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <div className="p-5 pt-0">
-        <button
-          onClick={onPlaceOrder}
-          disabled={items.length === 0 || isSubmitting}
-          className="w-full bg-bronze hover:bg-bronze-dark text-white rounded-full py-4 flex items-center justify-between px-6 transition-all shadow-lg shadow-bronze/20 disabled:opacity-30 disabled:cursor-not-allowed"
-        >
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
-              <i className={`fas ${isSubmitting ? 'fa-spinner fa-spin' : 'fa-arrow-right'} text-sm`} />
+        {pendingOrder ? (
+          <button
+            onClick={handleConfirmPayment}
+            disabled={!isPaymentReady || isPaying}
+            className="w-full bg-bronze hover:bg-bronze-dark text-white rounded-full py-4 flex items-center justify-between px-6 transition-all shadow-lg shadow-bronze/20 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <i className={`fas ${isPaying ? 'fa-spinner fa-spin' : 'fa-check'} text-sm`} />
+              </div>
+              <span className="font-semibold">{isPaying ? 'Confirming...' : 'Confirm Payment'}</span>
             </div>
-            <span className="font-semibold">{isSubmitting ? 'Processing...' : 'Place Order'}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="font-bold">${total.toFixed(1)}</span>
-            <i className="fas fa-chevron-right text-sm" />
-          </div>
-        </button>
+            <div className="flex items-center gap-2">
+              <span className="font-bold">{formatCurrency(total)}</span>
+              <i className="fas fa-chevron-right text-sm" />
+            </div>
+          </button>
+        ) : (
+          <button
+            onClick={onPlaceOrder}
+            disabled={items.length === 0 || isSubmitting}
+            className="w-full bg-bronze hover:bg-bronze-dark text-white rounded-full py-4 flex items-center justify-between px-6 transition-all shadow-lg shadow-bronze/20 disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-white/20 rounded-full flex items-center justify-center">
+                <i className={`fas ${isSubmitting ? 'fa-spinner fa-spin' : 'fa-arrow-right'} text-sm`} />
+              </div>
+              <span className="font-semibold">{isSubmitting ? 'Processing...' : 'Place Order'}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="font-bold">{formatCurrency(total)}</span>
+              <i className="fas fa-chevron-right text-sm" />
+            </div>
+          </button>
+        )}
       </div>
     </div>
   );

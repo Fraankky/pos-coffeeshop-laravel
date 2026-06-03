@@ -6,12 +6,26 @@ import { CategoryTabs } from '@/pages/cashier/CategoryTabs';
 import { ProductCard } from '@/pages/cashier/ProductCard';
 import { ReceiptSidebar } from '@/pages/cashier/ReceiptSidebar';
 import api from '@/lib/api';
-import type { MenuItem, Category } from '@/types';
+import type { MenuItem, Category, Order, Table } from '@/types';
 
 const CATEGORY_MAP: Record<string, string> = {
   coffee: 'Kopi',
   tea: 'Teh',
   snack: 'Makanan Ringan',
+};
+
+const PRODUCT_IMAGES: Record<string, string> = {
+  Kopi: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop',
+  default: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=150&h=150&fit=crop',
+};
+
+const getApiErrorMessage = (error: unknown, fallback: string) => {
+  if (typeof error === 'object' && error !== null && 'response' in error) {
+    const response = (error as { response?: { data?: { message?: string } } }).response;
+    return response?.data?.message || fallback;
+  }
+
+  return fallback;
 };
 
 export function KasirPage() {
@@ -22,7 +36,10 @@ export function KasirPage() {
   const [activeTab, setActiveTab] = useState('coffee');
   const [search, setSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isPaying, setIsPaying] = useState(false);
   const [error, setError] = useState('');
+  const [successMessage, setSuccessMessage] = useState('');
+  const [pendingOrder, setPendingOrder] = useState<Order | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -35,14 +52,14 @@ export function KasirPage() {
     ]).then(([itemsRes, tablesRes, catRes]) => {
       setMenuItems(itemsRes.data.data.data);
       setCategories(catRes.data.data);
-      const t = (tablesRes.data.data as any[]).map((table: any) => ({
+      const t = (tablesRes.data.data as Table[]).map((table) => ({
         id: table.id,
         label: `T${table.table_number} - ${table.capacity} seats ${table.status === 'occupied' ? '(occupied)' : ''}`,
       }));
       setTables(t);
       setIsLoading(false);
     });
-  }, []);
+  }, [setTables]);
 
   const filteredMenuItems = menuItems.filter((item) => {
     const cat = categories.find((c) => c.id === item.category_id);
@@ -61,28 +78,37 @@ export function KasirPage() {
     snack: countByCategory('Makanan Ringan'),
   };
 
-  const handleAddItem = useCallback(async (item: MenuItem) => {
+  const getProductImage = useCallback((item: MenuItem): string => {
+    const catName = categories.find((c) => c.id === item.category_id)?.name;
+    return PRODUCT_IMAGES[catName || ''] || PRODUCT_IMAGES.default;
+  }, [categories]);
+
+  const handleAddItem = useCallback((item: MenuItem) => {
+    if (pendingOrder) return;
+
     addItem({
+      menuItemId: item.id,
       name: item.name,
-      price: item.price,
+      price: Number(item.price),
       size: 'regular',
       toppings: [],
       notes: '',
-      image: `https://images.unsplash.com/photo-${Math.random().toString(36).slice(2, 10)}?w=150&h=150&fit=crop`,
+      image: getProductImage(item),
     });
-  }, [addItem]);
+  }, [addItem, getProductImage, pendingOrder]);
 
   const handlePlaceOrder = async () => {
     if (items.length === 0) return;
     setIsSubmitting(true);
     setError('');
+    setSuccessMessage('');
 
     try {
       const payload = {
         order_type: orderType === 'order_online' ? 'takeaway' : orderType,
         table_id: orderType === 'dine_in' ? tableId : null,
         items: items.map((i) => ({
-          menu_item_id: 1,
+          menu_item_id: i.menuItemId,
           quantity: i.quantity,
           size: i.size,
           customization_notes: i.notes || null,
@@ -92,18 +118,36 @@ export function KasirPage() {
       const { data: orderRes } = await api.post('/orders', payload);
       const order = orderRes.data;
 
-      await api.post(`/orders/${order.id}/payment`, {
-        method: 'cash',
-        amount_paid: order.total_amount,
-      });
-
+      setPendingOrder(order);
       setStep('receipt');
-      clearCart();
-      resetCheckout();
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Gagal memproses');
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Gagal memproses'));
     } finally {
       setIsSubmitting(false);
+    }
+  };
+
+  const handleConfirmPayment = async (method: 'cash' | 'qris_simulated', amountPaid: number) => {
+    if (!pendingOrder) return;
+    setIsPaying(true);
+    setError('');
+    setSuccessMessage('');
+
+    try {
+      await api.post(`/orders/${pendingOrder.id}/payment`, {
+        method,
+        amount_paid: amountPaid,
+      });
+
+      const paidOrderId = pendingOrder.id;
+      setPendingOrder(null);
+      clearCart();
+      resetCheckout();
+      setSuccessMessage(`Pembayaran order #${paidOrderId} berhasil dikonfirmasi.`);
+    } catch (err: unknown) {
+      setError(getApiErrorMessage(err, 'Gagal memproses pembayaran'));
+    } finally {
+      setIsPaying(false);
     }
   };
 
@@ -187,6 +231,13 @@ export function KasirPage() {
             </div>
           )}
 
+          {successMessage && (
+            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl mb-3 text-sm flex items-center gap-2 flex-shrink-0 animate-in slide-in-from-top-2">
+              <i className="fas fa-check-circle" />
+              {successMessage}
+            </div>
+          )}
+
           <div className="flex-1 overflow-y-auto">
             {filteredMenuItems.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-20 text-gray-400">
@@ -197,14 +248,13 @@ export function KasirPage() {
             ) : (
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3 pb-4">
                 {filteredMenuItems.map((item) => {
-                  const priceInDollars = item.price / 15000;
-                  return (
-                    <ProductCard
-                      key={item.id}
-                      name={item.name}
-                      price={Number(priceInDollars.toFixed(1))}
-                      image={`https://images.unsplash.com/photo-${item.id * 1000}?w=150&h=150&fit=crop`}
-                      onAdd={() => handleAddItem(item)}
+                    return (
+                      <ProductCard
+                        key={item.id}
+                        name={item.name}
+                        price={Number(item.price)}
+                        image={getProductImage(item)}
+                        onAdd={() => handleAddItem(item)}
                     />
                   );
                 })}
@@ -213,7 +263,13 @@ export function KasirPage() {
           </div>
         </div>
 
-        <ReceiptSidebar onPlaceOrder={handlePlaceOrder} isSubmitting={isSubmitting} />
+        <ReceiptSidebar
+          pendingOrder={pendingOrder}
+          onPlaceOrder={handlePlaceOrder}
+          onConfirmPayment={handleConfirmPayment}
+          isSubmitting={isSubmitting}
+          isPaying={isPaying}
+        />
       </div>
 
       <style>{`
