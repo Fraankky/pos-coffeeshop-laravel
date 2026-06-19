@@ -101,15 +101,26 @@ class ReportService
             $csv .= implode(',', [
                 $order->id,
                 $order->created_at->format('Y-m-d H:i:s'),
-                '"' . ($order->user?->name ?? 'N/A') . '"',
+                $this->escapeCsvField($order->user?->name ?? 'N/A'),
                 $order->table_id ?? 'Takeaway',
-                '"' . $items . '"',
+                $this->escapeCsvField($items),
                 $order->total_amount,
-                $order->payment?->method ?? 'N/A',
-                $order->payment?->payment_status ?? 'N/A',
+                $this->escapeCsvField($order->payment?->method ?? 'N/A'),
+                $this->escapeCsvField($order->payment?->payment_status ?? 'N/A'),
             ]) . "\n";
         }
 
         return $csv;
+    }
+
+    private function escapeCsvField(string $value): string
+    {
+        $escaped = str_replace('"', '""', $value);
+
+        if (preg_match('/^[=+\-@\t]/', $escaped)) {
+            $escaped = "'" . $escaped;
+        }
+
+        return '"' . $escaped . '"';
     }
 }

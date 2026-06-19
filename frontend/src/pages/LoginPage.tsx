@@ -80,9 +80,11 @@ export function LoginPage() {
           </button>
         </form>
 
-        <p className="text-xs text-gray-400 text-center mt-6">
-          Demo: admin@pos.coffee / password
-        </p>
+        {import.meta.env.DEV && (
+          <p className="text-xs text-gray-400 text-center mt-6">
+            Demo: admin@pos.coffee / password
+          </p>
+        )}
       </div>
     </div>
   );

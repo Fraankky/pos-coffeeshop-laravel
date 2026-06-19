@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\ReportRequest;
 use App\Services\ReportService;
 use App\Traits\ApiResponse;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Request;
 
 class ReportController extends Controller
 {
@@ -16,7 +16,7 @@ class ReportController extends Controller
         private readonly ReportService $reportService
     ) {}
 
-    public function sales(Request $request): JsonResponse
+    public function sales(ReportRequest $request): JsonResponse
     {
         $sales = $this->reportService->getSales(
             $request->period,
@@ -27,7 +27,7 @@ class ReportController extends Controller
         return $this->success($sales);
     }
 
-    public function topItems(Request $request): JsonResponse
+    public function topItems(ReportRequest $request): JsonResponse
     {
         $items = $this->reportService->getTopItems(
             $request->from,
@@ -38,7 +38,7 @@ class ReportController extends Controller
         return $this->success($items);
     }
 
-    public function export(Request $request)
+    public function export(ReportRequest $request)
     {
         $orders = $this->reportService->getExportData(
             $request->from,
