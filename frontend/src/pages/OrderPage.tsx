@@ -1,22 +1,22 @@
 import { useState, useCallback, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
 import { useCartStore } from '@/stores/cartStore';
 import { useCashierStore } from '@/stores/cashierStore';
 import { useAuthStore } from '@/stores/authStore';
 import { CategoryTabs } from '@/pages/cashier/CategoryTabs';
 import { ProductCard } from '@/pages/cashier/ProductCard';
 import { ReceiptSidebar } from '@/pages/cashier/ReceiptSidebar';
+import { QueuePanel } from '@/pages/cashier/QueuePanel';
+import { useToast } from '@/components/Toast';
 import api from '@/lib/api';
 import type { MenuItem, Category, Order, Table } from '@/types';
 
-const CATEGORY_MAP: Record<string, string> = {
-  coffee: 'Kopi',
-  tea: 'Teh',
-  snack: 'Makanan Ringan',
-};
+const DEFAULT_IMAGE = 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=150&h=150&fit=crop';
 
-const PRODUCT_IMAGES: Record<string, string> = {
+const CATEGORY_DEFAULT_IMAGES: Record<string, string> = {
   Kopi: 'https://images.unsplash.com/photo-1509042239860-f550ce710b93?w=150&h=150&fit=crop',
-  default: 'https://images.unsplash.com/photo-1495474472287-4d71bcdd2085?w=150&h=150&fit=crop',
+  Teh: 'https://images.unsplash.com/photo-1627435601361-ec25f5b1d0e5?w=150&h=150&fit=crop',
+  default: DEFAULT_IMAGE,
 };
 
 const getApiErrorMessage = (error: unknown, fallback: string) => {
@@ -32,17 +32,30 @@ export function OrderPage() {
   const { items, addItem, clearCart } = useCartStore();
   const { tableId, orderType, setTables, setStep, resetCheckout } = useCashierStore();
   const { user } = useAuthStore();
+  const toast = useToast();
+  const location = useLocation();
 
-  const [activeTab, setActiveTab] = useState('coffee');
+  const [activeTab, setActiveTab] = useState('');
   const [search, setSearch] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isPaying, setIsPaying] = useState(false);
   const [error, setError] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
   const [pendingOrder, setPendingOrder] = useState<Order | null>(null);
   const [menuItems, setMenuItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [queueOrders, setQueueOrders] = useState<Order[]>([]);
+  const [queueLoading, setQueueLoading] = useState(true);
+
+  const fetchQueue = useCallback(async () => {
+    try {
+      const { data } = await api.get('/orders/active');
+      setQueueOrders(data.data);
+      setQueueLoading(false);
+    } catch {
+      setQueueLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
     Promise.all([
@@ -51,36 +64,37 @@ export function OrderPage() {
       api.get('/categories'),
     ]).then(([itemsRes, tablesRes, catRes]) => {
       setMenuItems(itemsRes.data.data.data);
-      setCategories(catRes.data.data);
+      const cats = catRes.data.data as Category[];
+      setCategories(cats);
+      if (cats.length > 0 && !activeTab) {
+        setActiveTab(String(cats[0].id));
+      }
       const t = (tablesRes.data.data as Table[]).map((table) => ({
         id: table.id,
-        label: `T${table.table_number} - ${table.capacity} seats ${table.status === 'occupied' ? '(occupied)' : ''}`,
+        label: `Meja ${table.table_number} - ${table.capacity} kursi ${table.status === 'occupied' ? '(terisi)' : ''}`,
       }));
       setTables(t);
       setIsLoading(false);
     });
   }, [setTables]);
 
+  const activeCategoryId = activeTab ? Number(activeTab) : 0;
+
   const filteredMenuItems = menuItems.filter((item) => {
-    const cat = categories.find((c) => c.id === item.category_id);
-    const catKey = Object.entries(CATEGORY_MAP).find(([, v]) => v === cat?.name)?.[0] || '';
-    const matchesCategory = catKey === activeTab || !activeTab;
+    const matchesCategory = !activeTab || item.category_id === activeCategoryId;
     const matchesSearch = search === '' || item.name.toLowerCase().includes(search.toLowerCase());
     return matchesCategory && matchesSearch && item.is_available;
   });
 
-  const countByCategory = (name: string) =>
-    menuItems.filter((m) => categories.find((c) => c.id === m.category_id)?.name === name).length;
-
-  const orderCounts = {
-    coffee: countByCategory('Kopi'),
-    tea: countByCategory('Teh'),
-    snack: countByCategory('Makanan Ringan'),
-  };
+  const orderCounts: Record<string, number> = {};
+  categories.forEach((cat) => {
+    orderCounts[String(cat.id)] = menuItems.filter((m) => m.category_id === cat.id).length;
+  });
 
   const getProductImage = useCallback((item: MenuItem): string => {
+    if (item.image) return item.image;
     const catName = categories.find((c) => c.id === item.category_id)?.name;
-    return PRODUCT_IMAGES[catName || ''] || PRODUCT_IMAGES.default;
+    return CATEGORY_DEFAULT_IMAGES[catName || ''] || CATEGORY_DEFAULT_IMAGES.default;
   }, [categories]);
 
   const handleAddItem = useCallback((item: MenuItem) => {
@@ -101,7 +115,7 @@ export function OrderPage() {
     if (items.length === 0) return;
     setIsSubmitting(true);
     setError('');
-    setSuccessMessage('');
+    toast.show('Pesanan berhasil dibuat!', 'success');
 
     try {
       const payload = {
@@ -131,7 +145,6 @@ export function OrderPage() {
     if (!pendingOrder) return;
     setIsPaying(true);
     setError('');
-    setSuccessMessage('');
 
     try {
       await api.post(`/orders/${pendingOrder.id}/payment`, {
@@ -143,7 +156,7 @@ export function OrderPage() {
       setPendingOrder(null);
       clearCart();
       resetCheckout();
-      setSuccessMessage(`Pembayaran order #${paidOrderId} berhasil dikonfirmasi.`);
+      toast.show(`Pembayaran order #${paidOrderId} berhasil dikonfirmasi.`, 'success');
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, 'Gagal memproses pembayaran'));
     } finally {
@@ -165,17 +178,42 @@ export function OrderPage() {
   return (
     <div className="min-h-screen bg-cream flex flex-col">
       <header className="px-6 py-3 flex items-center justify-between border-b border-cream-dark/50 bg-white/50 backdrop-blur-sm sticky top-0 z-30">
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 bg-bronze rounded-lg flex items-center justify-center shadow-sm">
-            <i className="fas fa-leaf text-white text-sm" />
-          </div>
-          <div>
-            <h1 className="font-bold text-espresso text-sm leading-tight tracking-tight">BREW & CO.</h1>
-            <p className="text-[10px] text-gray-400 -mt-0.5">COFFEE</p>
-          </div>
-        </div>
+          <div className="flex items-center gap-6">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 bg-bronze rounded-lg flex items-center justify-center shadow-sm">
+                <i className="fas fa-leaf text-white text-sm" />
+              </div>
+              <div>
+                <h1 className="font-bold text-espresso text-sm leading-tight tracking-tight">Flo Coffee Roastery</h1>
+                <p className="text-[10px] text-gray-400 -mt-0.5">Coffee · Roastery</p>
+              </div>
+            </div>
 
-        <p className="text-sm text-gray-500 font-medium hidden md:block">
+            <nav className="flex items-center gap-1">
+              <Link
+                to="/staff"
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  location.pathname === '/staff'
+                    ? 'bg-bronze text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                POS
+              </Link>
+              <Link
+                to="/staff/queue"
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                  location.pathname === '/staff/queue'
+                    ? 'bg-bronze text-white shadow-sm'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100'
+                }`}
+              >
+                Queue
+              </Link>
+            </nav>
+          </div>
+
+          <p className="text-sm text-gray-500 font-medium hidden md:block">
           {new Date().toLocaleDateString('en-US', { weekday: 'long', day: 'numeric', month: 'long' })}
         </p>
 
@@ -222,19 +260,12 @@ export function OrderPage() {
             )}
           </div>
 
-          <CategoryTabs activeTab={activeTab} onTabChange={setActiveTab} orderCounts={orderCounts} />
+          <CategoryTabs activeTab={activeTab} onTabChange={setActiveTab} categories={categories} orderCounts={orderCounts} />
 
           {error && (
             <div className="bg-coral-light border border-coral/20 text-coral px-4 py-3 rounded-2xl mb-3 text-sm flex items-center gap-2 flex-shrink-0 animate-in slide-in-from-top-2">
               <i className="fas fa-exclamation-circle" />
               {error}
-            </div>
-          )}
-
-          {successMessage && (
-            <div className="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-2xl mb-3 text-sm flex items-center gap-2 flex-shrink-0 animate-in slide-in-from-top-2">
-              <i className="fas fa-check-circle" />
-              {successMessage}
             </div>
           )}
 
@@ -260,6 +291,10 @@ export function OrderPage() {
                 })}
               </div>
             )}
+          </div>
+
+          <div className="flex-shrink-0 mt-3">
+            <QueuePanel orders={queueOrders} loading={queueLoading} onRefresh={fetchQueue} />
           </div>
         </div>
 

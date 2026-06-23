@@ -19,13 +19,13 @@ export function AdminDashboardPage() {
       <div className="px-8">
         <StatsCards
           stats={{
-            revenue: 2357.00,
-            revenueChange: 2,
-            onProgress: 10,
-            performance: 'Good',
-            performanceDate: '2/24',
+            revenue: 2357000,
+            revenueChange: 12,
+            onProgress: 5,
+            performance: 'Baik',
+            performanceDate: 'Hari ini',
             todaySales: 234,
-            todaySalesChange: 2,
+            todaySalesChange: 8,
           }}
         />
 

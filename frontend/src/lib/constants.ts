@@ -22,6 +22,10 @@ export const CATEGORY_TABS = [
   },
 ] as const;
 
+export const BRAND_NAME = 'Flo Coffee Roastery';
+export const BRAND_SHORT = 'Flo Coffee';
+export const BRAND_TAGLINE = 'Coffee · Roastery';
+
 export const TAX_RATE = 0.10;
 
 export const ORDER_TYPES = [

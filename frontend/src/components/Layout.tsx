@@ -34,7 +34,7 @@ export function Layout() {
         <div className="px-5 pt-5 pb-4 border-b border-mocha/40">
           <Link to="/" className="flex items-center gap-2">
             <span className="text-xl">☕</span>
-            <span className="text-xl font-extrabold text-cream tracking-tight">POS Coffee</span>
+            <span className="text-xl font-extrabold text-cream tracking-tight">Flo Coffee</span>
           </Link>
         </div>
 

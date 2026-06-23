@@ -16,7 +16,7 @@ export function StatsCards({ stats }: Props) {
   const cards = [
     {
       label: 'Total Revenue',
-      value: `$${stats.revenue.toFixed(2)}`,
+      value: `Rp ${stats.revenue.toLocaleString('id-ID')}`,
       change: `${stats.revenueChange >= 0 ? '▲' : '▼'} ${Math.abs(stats.revenueChange)}%`,
       changeColor: stats.revenueChange >= 0 ? 'text-green-600' : 'text-red-500',
       detail: 'Details',

@@ -26,13 +26,15 @@ const QRCode = (
 const formatCurrency = (value: number) => `Rp ${value.toLocaleString('id-ID')}`;
 
 export function ReceiptSidebar({ pendingOrder, onPlaceOrder, onConfirmPayment, isSubmitting, isPaying }: Props) {
-  const { items, updateQuantity, removeItem } = useCartStore();
+  const { items, updateQuantity, removeItem, clearCart } = useCartStore();
   const {
     orderType, setOrderType,
     customerName, setCustomerName,
     tableId, setTableId,
     tables,
   } = useCashierStore();
+  const [collapsed, setCollapsed] = useState(false);
+  const [showMenu, setShowMenu] = useState(false);
   const [paymentMethod, setPaymentMethod] = useState<'cash' | 'qris_simulated'>('cash');
   const [cashAmount, setCashAmount] = useState('');
 
@@ -47,20 +49,72 @@ export function ReceiptSidebar({ pendingOrder, onPlaceOrder, onConfirmPayment, i
     onConfirmPayment(paymentMethod, paymentMethod === 'qris_simulated' ? total : cashPaid);
   };
 
+  if (collapsed) {
+    return (
+      <div className="w-14 bg-white rounded-2xl shadow-sm flex flex-col items-center py-4 gap-3 h-[calc(100vh-100px)]">
+        <button
+          onClick={() => setCollapsed(false)}
+          className="w-10 h-10 bg-bronze rounded-full flex items-center justify-center text-white hover:bg-bronze-dark transition-all"
+        >
+          <i className="fas fa-chevron-left" />
+        </button>
+        <div className="flex-1 flex flex-col items-center justify-center gap-2">
+          <span className="text-xs font-bold text-gray-400 -rotate-90 whitespace-nowrap">{items.length} item</span>
+          <span className="text-[10px] font-semibold text-bronze -rotate-90 whitespace-nowrap">{formatCurrency(total)}</span>
+        </div>
+        <button
+          onClick={() => { if (items.length > 0 && !pendingOrder) onPlaceOrder(); }}
+          disabled={items.length === 0 || !!pendingOrder}
+          className="w-10 h-10 bg-bronze rounded-full flex items-center justify-center text-white hover:bg-bronze-dark disabled:opacity-30 disabled:cursor-not-allowed transition-all"
+        >
+          <i className="fas fa-arrow-right text-sm" />
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div className="w-96 bg-white rounded-2xl shadow-sm flex flex-col h-[calc(100vh-100px)]">
       <div className="p-5 border-b border-gray-100">
         <div className="flex items-center justify-between mb-4">
-          <button className="w-10 h-10 bg-bronze rounded-full flex items-center justify-center text-white">
-            <i className="fas fa-chevron-right" />
+          <button
+            onClick={() => setCollapsed(!collapsed)}
+            className="w-10 h-10 bg-bronze rounded-full flex items-center justify-center text-white hover:bg-bronze-dark transition-all"
+          >
+            <i className={`fas fa-chevron-${collapsed ? 'left' : 'right'}`} />
           </button>
           <div className="text-center">
-            <h3 className="font-semibold text-gray-800">Purchase Receipt</h3>
-            <p className="text-xs text-gray-500">#27362</p>
+            <h3 className="font-semibold text-gray-800">Pesanan</h3>
+            <p className="text-xs text-gray-500">{items.length > 0 ? `${items.length} item` : 'Kosong'}</p>
           </div>
-          <button className="w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600">
-            <i className="fas fa-bars" />
-          </button>
+          <div className="relative">
+            <button
+              onClick={() => setShowMenu(!showMenu)}
+              className="w-10 h-10 border border-gray-200 rounded-full flex items-center justify-center text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-all"
+            >
+              <i className="fas fa-bars" />
+            </button>
+            {showMenu && (
+              <div className="absolute right-0 top-full mt-1 bg-white rounded-xl shadow-lg border border-gray-100 py-1 z-50 w-44">
+                <button
+                  onClick={() => { clearCart(); setShowMenu(false); }}
+                  disabled={items.length === 0}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <i className="fas fa-trash-alt text-coral text-xs" />
+                  Kosongkan Cart
+                </button>
+                <button
+                  onClick={() => setShowMenu(false)}
+                  disabled={!pendingOrder}
+                  className="w-full text-left px-4 py-2 text-sm text-gray-600 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+                >
+                  <i className="fas fa-print text-gray-400 text-xs" />
+                  Cetak Struk
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="flex bg-gray-100 rounded-full p-1">

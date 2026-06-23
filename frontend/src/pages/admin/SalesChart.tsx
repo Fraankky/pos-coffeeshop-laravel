@@ -54,7 +54,7 @@ export function SalesChart({ tooltip }: Props) {
                 <div key={row.label} className="flex items-center gap-2 text-xs mb-1 last:mb-0">
                   <span className={`w-2 h-2 rounded-full ${row.color}`} />
                   <span className="text-gray-600">{row.label}</span>
-                  <span className="font-semibold ml-auto">${row.value}</span>
+                  <span className="font-semibold ml-auto">Rp {row.value.toLocaleString('id-ID')}</span>
                   <span className={`${row.changeColor} text-[10px]`}>{row.change}</span>
                 </div>
               ))}

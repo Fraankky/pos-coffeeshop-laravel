@@ -29,8 +29,8 @@ export function LoginPage() {
             <i className="fas fa-leaf text-white text-sm" />
           </div>
           <div>
-            <h1 className="font-bold text-espresso text-lg leading-tight tracking-tight">BREW & CO.</h1>
-            <p className="text-[10px] text-gray-500 -mt-0.5">COFFEE · POS</p>
+            <h1 className="font-bold text-espresso text-lg leading-tight tracking-tight">Flo Coffee Roastery</h1>
+            <p className="text-[10px] text-gray-500 -mt-0.5">Coffee · Roastery</p>
           </div>
         </div>
 
@@ -48,7 +48,7 @@ export function LoginPage() {
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@pos.coffee"
+              placeholder="admin@flocoffee.com"
               required
               className="w-full bg-gray-50 border border-gray-100 rounded-2xl px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-bronze/20 focus:border-bronze/30 transition-all"
             />
@@ -82,7 +82,7 @@ export function LoginPage() {
 
         {import.meta.env.DEV && (
           <p className="text-xs text-gray-400 text-center mt-6">
-            Demo: admin@pos.coffee / password
+            Demo: admin@flocoffee.com / password
           </p>
         )}
       </div>

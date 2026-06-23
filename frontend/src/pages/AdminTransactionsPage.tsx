@@ -9,9 +9,9 @@ export function AdminTransactionsPage() {
   const [to, setTo] = useState(() => new Date().toISOString().split('T')[0]);
 
   const fetchOrders = useCallback(async () => {
-    const { data } = await api.get('/orders', { params: { per_page: 50 } });
+    const { data } = await api.get('/orders', { params: { per_page: 50, date: from, from, to } });
     setOrders(data.data.data ?? data.data);
-  }, []);
+  }, [from, to]);
 
   useEffect(() => { fetchOrders(); }, [fetchOrders]);
 
@@ -66,7 +66,7 @@ export function AdminTransactionsPage() {
                     {order.status}
                   </span>
                 </td>
-                <td className="px-4 py-3 text-right font-medium text-cream">Rp {order.total_amount.toLocaleString('id-ID')}</td>
+                <td className="px-4 py-3 text-right font-medium text-cream">Rp {Number(order.total_amount).toLocaleString('id-ID')}</td>
                 <td className="px-4 py-3 text-center">
                   <button onClick={() => viewDetail(order.id)} className="text-cream/60 hover:text-caramen text-xs transition-colors">Detail</button>
                 </td>
