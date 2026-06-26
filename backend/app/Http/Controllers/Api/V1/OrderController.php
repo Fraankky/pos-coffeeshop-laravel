@@ -23,7 +23,9 @@ class OrderController extends Controller
     {
         $orders = $this->orderService->getFilteredOrders(
             $request->status,
-            $request->date
+            $request->date,
+            $request->from,
+            $request->to
         );
 
         return $this->success($orders);

@@ -1,6 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '@/lib/api';
 import type { User } from '@/types';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 
 export function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
@@ -32,81 +39,101 @@ export function AdminUsersPage() {
     fetchUsers();
   };
 
-  const roleColors: Record<string, string> = {
-    admin: 'bg-purple-500/10 text-purple-400',
-    staff: 'bg-green-500/10 text-green-400',
+  const handleDelete = async (user: User) => {
+    if (!confirm(`Hapus staff "${user.name}"?`)) return;
+    try {
+      await api.delete(`/users/${user.id}`);
+      fetchUsers();
+    } catch {
+      alert('Gagal menghapus. Anda tidak bisa menghapus diri sendiri.');
+    }
   };
 
+  const roleVariant = (role: string) => role === 'admin' ? 'default' as const : 'secondary' as const;
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-extrabold text-foam tracking-tight">User Management</h1>
-        <button onClick={openCreate} className="px-4 py-2 rounded-xl bg-caramen text-white text-sm font-medium hover:bg-caramen-hover transition-all">
-          + Tambah User
-        </button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">Staff Management</h1>
+          <p className="text-sm text-muted-foreground mt-1">Kelola akun staff dan admin</p>
+        </div>
+        <Button onClick={openCreate}>+ Tambah Staff</Button>
       </div>
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowForm(false)}>
-          <div className="bg-espresso border border-mocha/40 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-foam mb-4">{editing ? 'Edit User' : 'Tambah User'}</h2>
-            <div className="space-y-3">
-              <input placeholder="Nama" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk placeholder-cream/30 focus:outline-none focus:ring-2 focus:ring-caramen" />
-              <input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })}
-                className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk placeholder-cream/30 focus:outline-none focus:ring-2 focus:ring-caramen" />
-              <input placeholder={editing ? 'Kosongkan jika tidak diganti' : 'Password'} type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })}
-                className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk placeholder-cream/30 focus:outline-none focus:ring-2 focus:ring-caramen" />
-              <select value={form.role} onChange={(e) => setForm({ ...form, role: e.target.value })}
-                className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk focus:outline-none focus:ring-2 focus:ring-caramen">
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editing ? 'Edit Staff' : 'Tambah Staff'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Nama</Label>
+              <Input placeholder="Nama" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Email</Label>
+              <Input placeholder="Email" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>{editing ? 'Password (kosongkan jika tidak diganti)' : 'Password'}</Label>
+              <Input placeholder={editing ? 'Kosongkan jika tidak diganti' : 'Password'} type="password" value={form.password} onChange={(e) => setForm({ ...form, password: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>Role</Label>
+              <select
+                value={form.role}
+                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm"
+              >
                 <option value="staff">Staff</option>
                 <option value="admin">Admin</option>
               </select>
             </div>
-            <div className="flex gap-2 mt-6">
-              <button onClick={() => setShowForm(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-mocha/30 text-cream/60 hover:text-cream transition-all text-sm font-medium">Batal</button>
-              <button onClick={handleSave} className="flex-1 px-4 py-2.5 rounded-xl bg-caramen text-white hover:bg-caramen-hover transition-all text-sm font-medium">Simpan</button>
-            </div>
           </div>
-        </div>
-      )}
+          <DialogFooter showCloseButton>
+            <Button variant="outline" onClick={() => setShowForm(false)}>Batal</Button>
+            <Button onClick={handleSave}>Simpan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <div className="bg-espresso rounded-2xl border border-mocha/30 overflow-hidden shadow-lg shadow-black/20">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-mocha/30">
-              <th className="text-left px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Nama</th>
-              <th className="text-left px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Email</th>
-              <th className="text-center px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Role</th>
-              <th className="text-center px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Status</th>
-              <th className="text-center px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-mocha/20">
-            {users.map((user) => (
-              <tr key={user.id} className="hover:bg-vanilla/5 transition-colors">
-                <td className="px-4 py-3 text-milk font-medium">{user.name}</td>
-                <td className="px-4 py-3 text-cream/60">{user.email}</td>
-                <td className="px-4 py-3 text-center">
-                  <span className={`px-3 py-1 rounded-full text-xs font-medium capitalize ${roleColors[user.role] || ''}`}>
-                    {user.role}
-                  </span>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <button onClick={() => toggleActive(user)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all
-                      ${user.is_active ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                    {user.is_active ? 'Aktif' : 'Nonaktif'}
-                  </button>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <button onClick={() => openEdit(user)} className="text-cream/60 hover:text-caramen text-xs transition-colors">Edit</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nama</TableHead>
+                <TableHead>Email</TableHead>
+                <TableHead className="text-center">Role</TableHead>
+                <TableHead className="text-center">Status</TableHead>
+                <TableHead className="text-center">Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {users.map((user) => (
+                <TableRow key={user.id}>
+                  <TableCell className="font-medium">{user.name}</TableCell>
+                  <TableCell className="text-muted-foreground">{user.email}</TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={roleVariant(user.role)}>{user.role}</Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={user.is_active ? 'default' : 'destructive'} onClick={() => toggleActive(user)} className="cursor-pointer">
+                      {user.is_active ? 'Aktif' : 'Nonaktif'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Button variant="link" size="sm" onClick={() => openEdit(user)}>Edit</Button>
+                    <Button variant="link" size="sm" className="text-destructive" onClick={() => handleDelete(user)}>Hapus</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {users.length === 0 && <p className="text-center py-8 text-muted-foreground text-sm">Belum ada staff</p>}
+        </CardContent>
+      </Card>
     </div>
   );
 }

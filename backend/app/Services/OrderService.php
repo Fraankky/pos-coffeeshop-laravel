@@ -99,7 +99,7 @@ class OrderService
             ->get();
     }
 
-    public function getFilteredOrders(?string $status, ?string $date)
+    public function getFilteredOrders(?string $status, ?string $date, ?string $from = null, ?string $to = null)
     {
         $query = Order::query();
 
@@ -107,10 +107,16 @@ class OrderService
             $query->where('status', $status);
         }
 
-        if ($date) {
-            $query->whereDate('created_at', $date);
+        if ($from) {
+            $query->whereDate('created_at', '>=', $from);
         }
 
-        return $query->paginate(request('per_page', 15));
+        if ($to) {
+            $query->whereDate('created_at', '<=', $to);
+        }
+
+        return $query->with(['user:id,name', 'table:id,table_number', 'payment'])
+            ->orderBy('created_at', 'desc')
+            ->paginate(request('per_page', 15));
     }
 }

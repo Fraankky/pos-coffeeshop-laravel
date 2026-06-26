@@ -8,6 +8,8 @@ import { ProductCard } from '@/pages/cashier/ProductCard';
 import { ReceiptSidebar } from '@/pages/cashier/ReceiptSidebar';
 import { QueuePanel } from '@/pages/cashier/QueuePanel';
 import { useToast } from '@/components/Toast';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import api from '@/lib/api';
 import type { MenuItem, Category, Order, Table } from '@/types';
 
@@ -30,7 +32,7 @@ const getApiErrorMessage = (error: unknown, fallback: string) => {
 
 export function OrderPage() {
   const { items, addItem, clearCart } = useCartStore();
-  const { tableId, orderType, setTables, setStep, resetCheckout } = useCashierStore();
+  const { tableId, orderType, customerName, setTables, setStep, resetCheckout } = useCashierStore();
   const { user } = useAuthStore();
   const toast = useToast();
   const location = useLocation();
@@ -46,6 +48,7 @@ export function OrderPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [queueOrders, setQueueOrders] = useState<Order[]>([]);
   const [queueLoading, setQueueLoading] = useState(true);
+  const [successModal, setSuccessModal] = useState<{ id: number; total: number; customerName: string; method: string } | null>(null);
 
   const fetchQueue = useCallback(async () => {
     try {
@@ -113,6 +116,10 @@ export function OrderPage() {
 
   const handlePlaceOrder = async () => {
     if (items.length === 0) return;
+    if (!customerName.trim()) {
+      toast.show('Nama pelanggan wajib diisi', 'error');
+      return;
+    }
     setIsSubmitting(true);
     setError('');
     toast.show('Pesanan berhasil dibuat!', 'success');
@@ -152,11 +159,16 @@ export function OrderPage() {
         amount_paid: amountPaid,
       });
 
-      const paidOrderId = pendingOrder.id;
+      setSuccessModal({
+        id: pendingOrder.id,
+        total: Number(pendingOrder.total_amount),
+        customerName: customerName,
+        method: method === 'cash' ? 'Tunai' : 'QRIS',
+      });
+
       setPendingOrder(null);
       clearCart();
       resetCheckout();
-      toast.show(`Pembayaran order #${paidOrderId} berhasil dikonfirmasi.`, 'success');
     } catch (err: unknown) {
       setError(getApiErrorMessage(err, 'Gagal memproses pembayaran'));
     } finally {
@@ -317,6 +329,30 @@ export function OrderPage() {
         }
         .animate-in { animation: slide-in-from-top-2 0.2s ease-out; }
       `}</style>
+
+      <Dialog open={!!successModal} onOpenChange={(open) => { if (!open) setSuccessModal(null); }}>
+        <DialogContent className="sm:max-w-sm text-center">
+          {successModal && (
+            <>
+              <DialogHeader>
+                <DialogTitle className="text-center">
+                  <span className="text-4xl block mb-3">✅</span>
+                  Pembayaran Berhasil
+                </DialogTitle>
+              </DialogHeader>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between"><span className="text-muted-foreground">Order</span><span className="font-medium">#{successModal.id}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Total</span><span className="font-bold">Rp {successModal.total.toLocaleString('id-ID')}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Pelanggan</span><span>{successModal.customerName}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">Metode</span><span>{successModal.method}</span></div>
+              </div>
+              <DialogFooter>
+                <Button onClick={() => setSuccessModal(null)} className="w-full">OK</Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

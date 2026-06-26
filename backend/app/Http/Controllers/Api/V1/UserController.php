@@ -51,4 +51,14 @@ class UserController extends Controller
         $user->update(['is_active' => !$user->is_active]);
         return $this->success($user);
     }
+
+    public function destroy(Request $request, User $user): JsonResponse
+    {
+        if ($user->id === $request->user()->id) {
+            return $this->forbidden('Cannot delete yourself');
+        }
+
+        $user->delete();
+        return $this->noContent('User deleted successfully');
+    }
 }

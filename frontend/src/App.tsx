@@ -8,7 +8,6 @@ import { QueuePage } from '@/pages/QueuePage';
 import { AdminDashboardPage } from '@/pages/AdminDashboardPage';
 import { AdminMenuPage } from '@/pages/AdminMenuPage';
 import { AdminUsersPage } from '@/pages/AdminUsersPage';
-import { AdminTablesPage } from '@/pages/AdminTablesPage';
 import { AdminTransactionsPage } from '@/pages/AdminTransactionsPage';
 
 function App() {
@@ -22,12 +21,11 @@ function App() {
             <Route path="/staff/queue" element={<QueuePage />} />
           </Route>
           <Route element={<ProtectedRoute roles={['admin']} />}>
-            <Route path="/admin" element={<AdminDashboardPage />} />
             <Route element={<Layout />}>
+              <Route path="/admin" element={<AdminDashboardPage />} />
               <Route path="/admin/menu" element={<AdminMenuPage />} />
-              <Route path="/admin/users" element={<AdminUsersPage />} />
-              <Route path="/admin/tables" element={<AdminTablesPage />} />
-              <Route path="/admin/transactions" element={<AdminTransactionsPage />} />
+              <Route path="/admin/staff" element={<AdminUsersPage />} />
+              <Route path="/admin/history" element={<AdminTransactionsPage />} />
             </Route>
           </Route>
           <Route path="*" element={<Navigate to="/login" replace />} />

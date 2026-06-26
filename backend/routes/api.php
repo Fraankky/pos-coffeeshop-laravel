@@ -68,6 +68,7 @@ Route::prefix('v1')->group(function () {
             Route::post('/users', [App\Http\Controllers\Api\V1\UserController::class, 'store']);
             Route::put('/users/{user}', [App\Http\Controllers\Api\V1\UserController::class, 'update']);
             Route::patch('/users/{user}/toggle', [App\Http\Controllers\Api\V1\UserController::class, 'toggleActive']);
+            Route::delete('/users/{user}', [App\Http\Controllers\Api\V1\UserController::class, 'destroy']);
         });
     });
 });

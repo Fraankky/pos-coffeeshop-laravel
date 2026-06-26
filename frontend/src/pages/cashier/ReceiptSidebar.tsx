@@ -135,7 +135,9 @@ export function ReceiptSidebar({ pendingOrder, onPlaceOrder, onConfirmPayment, i
       <div className="px-5 py-4 border-b border-gray-100">
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="text-xs text-gray-500 mb-1 block">Customer name</label>
+            <label className="text-xs text-gray-500 mb-1 block">
+              Customer name <span className="text-coral">*</span>
+            </label>
             <input
               type="text"
               value={customerName}
@@ -268,7 +270,7 @@ export function ReceiptSidebar({ pendingOrder, onPlaceOrder, onConfirmPayment, i
         ) : (
           <button
             onClick={onPlaceOrder}
-            disabled={items.length === 0 || isSubmitting}
+            disabled={items.length === 0 || isSubmitting || !customerName.trim()}
             className="w-full bg-bronze hover:bg-bronze-dark text-white rounded-full py-4 flex items-center justify-between px-6 transition-all shadow-lg shadow-bronze/20 disabled:opacity-30 disabled:cursor-not-allowed"
           >
             <div className="flex items-center gap-3">

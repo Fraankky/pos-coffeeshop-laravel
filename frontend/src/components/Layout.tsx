@@ -1,78 +1,70 @@
-import { Link, Outlet, useNavigate, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
+import { Button } from '@/components/ui/button';
+import { Separator } from '@/components/ui/separator';
 
-const navItems = {
-  staff: [
-    { to: '/staff', label: 'Staff POS', icon: '🛒' },
-  ],
-  admin: [
-    { to: '/admin', label: 'Dashboard', icon: '📊' },
-    { to: '/admin/menu', label: 'Menu', icon: '☕' },
-    { to: '/admin/users', label: 'Users', icon: '👥' },
-    { to: '/admin/tables', label: 'Tables', icon: '🪑' },
-    { to: '/admin/transactions', label: 'Transactions', icon: '🧾' },
-  ],
-} as const;
+const navItems = [
+  { to: '/admin', label: 'Dashboard' },
+  { to: '/admin/menu', label: 'Menu' },
+  { to: '/admin/staff', label: 'Staff' },
+  { to: '/admin/history', label: 'History' },
+] as const;
 
 export function Layout() {
   const { user, logout } = useAuthStore();
-  const navigate = useNavigate();
   const location = useLocation();
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
-  };
-
-  const roleKey = user?.role ?? 'staff';
-  const items = navItems[roleKey as keyof typeof navItems] ?? [];
-  const roleLabel = roleKey === 'admin' ? 'Admin' : 'Staff';
 
   return (
     <div className="min-h-screen flex">
-      <aside className="w-64 bg-roast flex flex-col flex-shrink-0">
-        <div className="px-5 pt-5 pb-4 border-b border-mocha/40">
+      <aside className="w-56 flex flex-col flex-shrink-0 border-r bg-sidebar text-sidebar-foreground">
+        <div className="px-4 pt-5 pb-3">
           <Link to="/" className="flex items-center gap-2">
-            <span className="text-xl">☕</span>
-            <span className="text-xl font-extrabold text-cream tracking-tight">Flo Coffee</span>
+            <span className="text-lg font-extrabold tracking-tight text-foreground">Flo Coffee</span>
           </Link>
+          <p className="text-xs text-muted-foreground mt-0.5">Roastery</p>
         </div>
 
-        <div className="px-5 py-3 text-xs text-cream/50 border-b border-mocha/20">
-          {user?.name} · <span className="capitalize">{roleLabel}</span>
+        <div className="px-4 pb-2">
+          <p className="text-xs text-muted-foreground">
+            {user?.name} <span className="opacity-60">· Admin</span>
+          </p>
         </div>
 
-        <nav className="flex-1 px-3 py-4 space-y-1">
-          {items.map((item) => {
+        <Separator className="mb-3" />
+
+        <nav className="flex-1 px-2 space-y-0.5">
+          {navItems.map((item) => {
             const isActive = location.pathname === item.to;
             return (
-              <Link
+              <Button
                 key={item.to}
-                to={item.to}
-                className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-150
-                  ${isActive
-                    ? 'bg-latte text-foam shadow-lg shadow-black/20'
-                    : 'text-cream/60 hover:text-cream hover:bg-espresso'}`}
-              >
-                <span className="text-base">{item.icon}</span>
-                {item.label}
-              </Link>
+                variant={isActive ? 'secondary' : 'ghost'}
+                size="default"
+                className="w-full justify-start font-normal"
+                render={
+                  <Link to={item.to}>
+                    {item.label}
+                  </Link>
+                }
+              />
             );
           })}
         </nav>
 
-        <div className="px-3 py-4 border-t border-mocha/20">
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-cream/50 hover:text-cream hover:bg-espresso transition-all duration-150"
+        <Separator className="mt-auto" />
+        <div className="px-2 py-3">
+          <Button
+            variant="ghost"
+            size="default"
+            className="w-full justify-start text-muted-foreground hover:text-destructive"
+            onClick={() => logout()}
           >
-            <span className="text-base">🚪</span>
             Logout
-          </button>
+          </Button>
         </div>
       </aside>
 
-      <main className="flex-1 p-6 overflow-auto bg-[#12100c]">
+      <main className="flex-1 p-6 overflow-auto bg-background">
         <Outlet />
       </main>
     </div>

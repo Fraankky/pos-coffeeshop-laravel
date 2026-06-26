@@ -1,13 +1,20 @@
 import { useState, useEffect, useCallback } from 'react';
 import api from '@/lib/api';
 import type { Category, MenuItem } from '@/types';
+import { Card, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Label } from '@/components/ui/label';
 
 export function AdminMenuPage() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<MenuItem | null>(null);
-  const [form, setForm] = useState({ name: '', category_id: 0, price: 0, stock_qty: 0, stock_min_threshold: 5, is_available: true });
+  const [form, setForm] = useState({ name: '', category_id: 0, price: 0, image: '', stock_qty: 0, stock_min_threshold: 5, is_available: true });
 
   const fetchData = useCallback(async () => {
     const [itemsRes, catRes] = await Promise.all([
@@ -21,12 +28,12 @@ export function AdminMenuPage() {
   useEffect(() => { fetchData(); }, [fetchData]);
 
   const openCreate = () => {
-    setForm({ name: '', category_id: categories[0]?.id || 0, price: 0, stock_qty: 0, stock_min_threshold: 5, is_available: true });
+    setForm({ name: '', category_id: categories[0]?.id || 0, price: 0, image: '', stock_qty: 0, stock_min_threshold: 5, is_available: true });
     setEditing(null); setShowForm(true);
   };
 
   const openEdit = (item: MenuItem) => {
-    setForm({ name: item.name, category_id: item.category_id, price: item.price, stock_qty: item.stock_qty, stock_min_threshold: item.stock_min_threshold, is_available: item.is_available });
+    setForm({ name: item.name, category_id: item.category_id, price: Number(item.price), image: item.image || '', stock_qty: item.stock_qty, stock_min_threshold: item.stock_min_threshold, is_available: item.is_available });
     setEditing(item); setShowForm(true);
   };
 
@@ -45,81 +52,115 @@ export function AdminMenuPage() {
     if (confirm('Hapus item ini?')) { await api.delete(`/menu-items/${id}`); fetchData(); }
   };
 
+  const catIdToString = (category_id: number) => categories.find((c) => c.id === category_id)?.name ?? '-';
+
   return (
-    <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-extrabold text-foam tracking-tight">Menu Management</h1>
-        <button onClick={openCreate} className="px-4 py-2 rounded-xl bg-caramen text-white text-sm font-medium hover:bg-caramen-hover transition-all">
-          + Tambah Menu
-        </button>
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-extrabold tracking-tight">Menu Management</h1>
+          <p className="text-sm text-muted-foreground mt-1">Kelola daftar menu dan kategori</p>
+        </div>
+        <Button onClick={openCreate}>+ Tambah Menu</Button>
       </div>
 
-      {showForm && (
-        <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center z-50" onClick={() => setShowForm(false)}>
-          <div className="bg-espresso border border-mocha/40 rounded-2xl p-6 w-full max-w-md mx-4 shadow-2xl shadow-black/40" onClick={(e) => e.stopPropagation()}>
-            <h2 className="text-lg font-bold text-foam mb-4">{editing ? 'Edit Menu' : 'Tambah Menu'}</h2>
-            <div className="space-y-3">
-              <select value={form.category_id} onChange={(e) => setForm({ ...form, category_id: Number(e.target.value) })}
-                className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk focus:outline-none focus:ring-2 focus:ring-caramen">
+      <Dialog open={showForm} onOpenChange={setShowForm}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>{editing ? 'Edit Menu' : 'Tambah Menu'}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div className="space-y-2">
+              <Label>Kategori</Label>
+              <select
+                value={form.category_id}
+                onChange={(e) => setForm({ ...form, category_id: Number(e.target.value) })}
+                className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm"
+              >
                 {categories.map((cat) => (<option key={cat.id} value={cat.id}>{cat.name}</option>))}
               </select>
-              <input placeholder="Nama menu" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
-                className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk placeholder-cream/30 focus:outline-none focus:ring-2 focus:ring-caramen" />
-              <input type="number" placeholder="Harga" value={form.price} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })}
-                className="w-full bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk placeholder-cream/30 focus:outline-none focus:ring-2 focus:ring-caramen" />
-              <div className="flex gap-2">
-                <input type="number" placeholder="Stok" value={form.stock_qty} onChange={(e) => setForm({ ...form, stock_qty: Number(e.target.value) })}
-                  className="flex-1 bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk placeholder-cream/30 focus:outline-none focus:ring-2 focus:ring-caramen" />
-                <input type="number" placeholder="Min stok" value={form.stock_min_threshold} onChange={(e) => setForm({ ...form, stock_min_threshold: Number(e.target.value) })}
-                  className="flex-1 bg-vanilla/5 border border-mocha/30 rounded-xl px-3 py-2.5 text-sm text-milk placeholder-cream/30 focus:outline-none focus:ring-2 focus:ring-caramen" />
+            </div>
+            <div className="space-y-2">
+              <Label>Nama</Label>
+              <Input placeholder="Nama menu" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} />
+            </div>
+            <div className="space-y-2">
+              <Label>URL Gambar</Label>
+              <Input placeholder="https://..." value={form.image} onChange={(e) => setForm({ ...form, image: e.target.value })} />
+              {form.image && (
+                <img src={form.image} alt="Preview" className="w-16 h-16 rounded-lg object-cover border" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>Harga</Label>
+              <Input type="number" placeholder="0" value={form.price || ''} onChange={(e) => setForm({ ...form, price: Number(e.target.value) })} />
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              <div className="space-y-2">
+                <Label>Stok</Label>
+                <Input type="number" placeholder="0" value={form.stock_qty || ''} onChange={(e) => setForm({ ...form, stock_qty: Number(e.target.value) })} />
+              </div>
+              <div className="space-y-2">
+                <Label>Min Stok</Label>
+                <Input type="number" placeholder="5" value={form.stock_min_threshold || ''} onChange={(e) => setForm({ ...form, stock_min_threshold: Number(e.target.value) })} />
               </div>
             </div>
-            <div className="flex gap-2 mt-6">
-              <button onClick={() => setShowForm(false)} className="flex-1 px-4 py-2.5 rounded-xl border border-mocha/30 text-cream/60 hover:text-cream transition-all text-sm font-medium">Batal</button>
-              <button onClick={handleSave} className="flex-1 px-4 py-2.5 rounded-xl bg-caramen text-white hover:bg-caramen-hover transition-all text-sm font-medium">Simpan</button>
-            </div>
           </div>
-        </div>
-      )}
+          <DialogFooter showCloseButton>
+            <Button variant="outline" onClick={() => setShowForm(false)}>Batal</Button>
+            <Button onClick={handleSave}>Simpan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-      <div className="bg-espresso rounded-2xl border border-mocha/30 overflow-hidden shadow-lg shadow-black/20">
-        <table className="w-full text-sm">
-          <thead>
-            <tr className="border-b border-mocha/30">
-              <th className="text-left px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Nama</th>
-              <th className="text-left px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Kategori</th>
-              <th className="text-right px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Harga</th>
-              <th className="text-center px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Stok</th>
-              <th className="text-center px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Status</th>
-              <th className="text-center px-4 py-3 font-medium text-cream/60 text-xs uppercase tracking-wider">Aksi</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-mocha/20">
-            {items.map((item) => (
-              <tr key={item.id} className="hover:bg-vanilla/5 transition-colors">
-                <td className="px-4 py-3 text-milk font-medium">{item.name}</td>
-                <td className="px-4 py-3 text-cream/60">{categories.find((c) => c.id === item.category_id)?.name}</td>
-                <td className="px-4 py-3 text-right text-cream">Rp {item.price.toLocaleString('id-ID')}</td>
-                <td className={`px-4 py-3 text-center ${item.stock_qty <= item.stock_min_threshold && item.stock_qty > 0 ? 'text-red-400 font-medium' : 'text-milk'}`}>
-                  {item.stock_qty}
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <button onClick={() => toggleAvailable(item)}
-                    className={`px-3 py-1 rounded-full text-xs font-medium transition-all
-                      ${item.is_available ? 'bg-green-500/10 text-green-400' : 'bg-red-500/10 text-red-400'}`}>
-                    {item.is_available ? 'Tersedia' : 'Habis'}
-                  </button>
-                </td>
-                <td className="px-4 py-3 text-center">
-                  <button onClick={() => openEdit(item)} className="text-cream/60 hover:text-caramen text-xs mr-3 transition-colors">Edit</button>
-                  <button onClick={() => handleDelete(item.id)} className="text-red-400 hover:text-red-300 text-xs transition-colors">Hapus</button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        {items.length === 0 && <p className="text-center py-8 text-cream/40 text-sm">Belum ada menu</p>}
-      </div>
+      <Card>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Nama</TableHead>
+                <TableHead className="text-center">Gambar</TableHead>
+                <TableHead>Kategori</TableHead>
+                <TableHead className="text-right">Harga</TableHead>
+                <TableHead className="text-center">Stok</TableHead>
+                <TableHead className="text-center">Status</TableHead>
+                <TableHead className="text-center">Aksi</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {items.map((item) => (
+                <TableRow key={item.id}>
+                  <TableCell className="font-medium">{item.name}</TableCell>
+                  <TableCell className="text-center">
+                    {item.image ? (
+                      <img src={item.image} alt={item.name} className="w-7 h-7 rounded object-cover inline-block" onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }} />
+                    ) : (
+                      <span className="text-muted-foreground text-xs">-</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-muted-foreground">{catIdToString(item.category_id)}</TableCell>
+                  <TableCell className="text-right">Rp {Number(item.price).toLocaleString('id-ID')}</TableCell>
+                  <TableCell className="text-center">
+                    <span className={item.stock_qty <= item.stock_min_threshold && item.stock_qty > 0 ? 'text-destructive font-medium' : ''}>
+                      {item.stock_qty}
+                    </span>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Badge variant={item.is_available ? 'default' : 'destructive'} onClick={() => toggleAvailable(item)} className="cursor-pointer">
+                      {item.is_available ? 'Tersedia' : 'Habis'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-center">
+                    <Button variant="link" size="sm" onClick={() => openEdit(item)}>Edit</Button>
+                    <Button variant="link" size="sm" className="text-destructive" onClick={() => handleDelete(item.id)}>Hapus</Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+          {items.length === 0 && <p className="text-center py-8 text-muted-foreground text-sm">Belum ada menu</p>}
+        </CardContent>
+      </Card>
     </div>
   );
 }
