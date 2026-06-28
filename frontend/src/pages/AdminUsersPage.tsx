@@ -4,16 +4,26 @@ import type { User } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/Toast';
+
+interface UserForm {
+  name: string;
+  email: string;
+  password: string;
+  role: User['role'];
+}
 
 export function AdminUsersPage() {
   const [users, setUsers] = useState<User[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<User | null>(null);
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'staff' });
+  const [deleteTarget, setDeleteTarget] = useState<User | null>(null);
+  const [form, setForm] = useState<UserForm>({ name: '', email: '', password: '', role: 'staff' });
+  const toast = useToast();
 
   const fetchUsers = useCallback(async () => {
     const { data } = await api.get('/users');
@@ -27,8 +37,8 @@ export function AdminUsersPage() {
 
   const handleSave = async () => {
     if (editing) {
-      const payload = { ...form };
-      if (!payload.password) delete (payload as any).password;
+      const payload: Partial<UserForm> = { ...form };
+      if (!payload.password) delete payload.password;
       await api.put(`/users/${editing.id}`, payload);
     } else await api.post('/users', form);
     setShowForm(false); fetchUsers();
@@ -39,13 +49,16 @@ export function AdminUsersPage() {
     fetchUsers();
   };
 
-  const handleDelete = async (user: User) => {
-    if (!confirm(`Hapus staff "${user.name}"?`)) return;
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
     try {
-      await api.delete(`/users/${user.id}`);
+      await api.delete(`/users/${deleteTarget.id}`);
+      setDeleteTarget(null);
+      toast.show('Staff berhasil dihapus');
       fetchUsers();
     } catch {
-      alert('Gagal menghapus. Anda tidak bisa menghapus diri sendiri.');
+      toast.show('Gagal menghapus. Anda tidak bisa menghapus diri sendiri.', 'error');
     }
   };
 
@@ -83,7 +96,7 @@ export function AdminUsersPage() {
               <Label>Role</Label>
               <select
                 value={form.role}
-                onChange={(e) => setForm({ ...form, role: e.target.value })}
+                onChange={(e) => setForm({ ...form, role: e.target.value as User['role'] })}
                 className="flex h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm"
               >
                 <option value="staff">Staff</option>
@@ -94,6 +107,21 @@ export function AdminUsersPage() {
           <DialogFooter showCloseButton>
             <Button variant="outline" onClick={() => setShowForm(false)}>Batal</Button>
             <Button onClick={handleSave}>Simpan</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hapus Staff</DialogTitle>
+            <DialogDescription>
+              Hapus staff "{deleteTarget?.name}" dari daftar pengguna?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Batal</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Hapus</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -125,7 +153,7 @@ export function AdminUsersPage() {
                   </TableCell>
                   <TableCell className="text-center">
                     <Button variant="link" size="sm" onClick={() => openEdit(user)}>Edit</Button>
-                    <Button variant="link" size="sm" className="text-destructive" onClick={() => handleDelete(user)}>Hapus</Button>
+                    <Button variant="link" size="sm" className="text-destructive" onClick={() => setDeleteTarget(user)}>Hapus</Button>
                   </TableCell>
                 </TableRow>
               ))}

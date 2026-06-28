@@ -13,8 +13,11 @@ class MenuItemTest extends TestCase
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1/menu-items';
+
     private User $admin;
+
     private Category $category;
+
     private string $token;
 
     protected function setUp(): void

@@ -1,6 +1,11 @@
 import { useState } from 'react';
+import { AxiosError } from 'axios';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '@/stores/authStore';
+
+interface ErrorResponse {
+  message?: string;
+}
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,8 +21,9 @@ export function LoginPage() {
       await login(email, password);
       const role = useAuthStore.getState().user?.role;
       navigate(`/${role}`);
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Login gagal');
+    } catch (err) {
+      const error = err as AxiosError<ErrorResponse>;
+      setError(error.response?.data?.message || 'Login gagal');
     }
   };
 

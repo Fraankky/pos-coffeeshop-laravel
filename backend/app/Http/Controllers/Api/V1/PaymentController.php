@@ -36,7 +36,7 @@ class PaymentController extends Controller
     {
         $payment = $order->payment;
 
-        if (!$payment) {
+        if (! $payment) {
             return $this->notFound('No payment found for this order');
         }
 

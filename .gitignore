@@ -1,6 +1,15 @@
 /vendor
 /node_modules
 /docs/*.pdf
+/docs/BE.md
+/docs/FE.md
+/docs/PLAN.md
+/docs/PRD.md
+/docs/REVIEW.md
+/docs/DESIGN.md
+/docs/REDESIGN_PLAN.md
+/docs/product-direction.md
+/docs/screen.png
 /.phpunit.cache
 /.env
 /.env.backup

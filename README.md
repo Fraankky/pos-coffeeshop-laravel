@@ -9,9 +9,9 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg)](http://makeapullrequest.com)
 
-A full-stack Point-of-Sale application built with **Laravel 12** and **React 18**. Order management, real-time queue, cash & QRIS payments, inventory tracking, and sales reporting — everything a modern coffee shop needs to run daily operations.
+A full-stack Point-of-Sale application built with **Laravel 12** and **React 19**. Order management, real-time queue, cash & QRIS payments, inventory tracking, and sales reporting — everything a modern coffee shop needs to run daily operations.
 
-**[Live Demo](#)** · **[Report Bug](https://github.com/Fraankky/pos-coffeeshop-laravel/issues)** · **[Request Feature](https://github.com/Fraankky/pos-coffeeshop-laravel/issues)**
+**[Report Bug](https://github.com/Fraankky/pos-coffeeshop-laravel/issues)** · **[Request Feature](https://github.com/Fraankky/pos-coffeeshop-laravel/issues)**
 
 </div>
 
@@ -19,7 +19,6 @@ A full-stack Point-of-Sale application built with **Laravel 12** and **React 18*
 
 ## 📑 Table of Contents
 
-- [Screenshots](#-screenshots)
 - [Features](#-features)
 - [Tech Stack](#-tech-stack)
 - [Quick Start](#-quick-start)
@@ -31,20 +30,6 @@ A full-stack Point-of-Sale application built with **Laravel 12** and **React 18*
 - [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
 - [License](#-license)
-
----
-
-## 📸 Screenshots
-
-| POS Order | Admin Dashboard |
-|:---:|:---:|
-| ![POS](https://via.placeholder.com/400x250/3b82f6/ffffff?text=POS+Order+Screen) | ![Dashboard](https://via.placeholder.com/400x250/8b5cf6/ffffff?text=Admin+Dashboard) |
-
-| Queue Panel | Menu Management |
-|:---:|:---:|
-| ![Queue](https://via.placeholder.com/400x250/f59e0b/ffffff?text=Order+Queue) | ![Menu](https://via.placeholder.com/400x250/10b981/ffffff?text=Menu+Management) |
-
-> *Replace these placeholders with actual screenshots. Take screenshots at 1280x720 resolution and place them in a `screenshots/` directory.*
 
 ---
 
@@ -86,7 +71,7 @@ A full-stack Point-of-Sale application built with **Laravel 12** and **React 18*
 | **Backend** | [Laravel 12](https://laravel.com) · PHP 8.2 |
 | **Database** | MySQL 8.0 |
 | **Auth** | [Laravel Sanctum](https://laravel.com/docs/sanctum) (token-based) |
-| **Frontend** | [React 18](https://react.dev) · [TypeScript](https://www.typescriptlang.org) · [Vite](https://vitejs.dev) |
+| **Frontend** | [React 19](https://react.dev) · [TypeScript](https://www.typescriptlang.org) · [Vite](https://vitejs.dev) |
 | **Styling** | [Tailwind CSS 4](https://tailwindcss.com) |
 | **State** | [Zustand](https://zustand-demo.pmnd.rs) |
 | **Charts** | [Recharts](https://recharts.org) |
@@ -201,7 +186,7 @@ pos-coffeeshop-laravel/
 │   ├── routes/
 │   │   └── api.php                  # 33 API endpoints
 │   └── tests/
-├── frontend/                   # React 18 SPA
+├── frontend/                   # React 19 SPA
 │   ├── src/
 │   │   ├── components/              # Shared UI & layout components
 │   │   ├── hooks/                   # Custom hooks (usePolling)
@@ -299,8 +284,6 @@ php artisan test
 # Run a specific test file
 php artisan test --filter=OrderTest
 ```
-
-> 66 tests, 112 assertions, all passing.
 
 Test files cover controllers, services, and API responses. SQLite is used as the testing database via `phpunit.xml`.
 

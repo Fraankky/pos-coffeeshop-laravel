@@ -14,7 +14,9 @@ class PaymentTest extends TestCase
     use RefreshDatabase;
 
     private User $staff;
+
     private Order $order;
+
     private string $token;
 
     protected function setUp(): void

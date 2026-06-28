@@ -12,7 +12,9 @@ class TableTest extends TestCase
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1/tables';
+
     private User $admin;
+
     private string $token;
 
     protected function setUp(): void

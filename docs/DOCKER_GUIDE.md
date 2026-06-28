@@ -240,5 +240,5 @@ Selesai. Buka http://localhost:5173 dan login dengan:
 
 | Role | Email | Password |
 |------|-------|----------|
-| Admin | admin@pos.coffee | password |
-| Staff | staff@pos.coffee | password |
+| Admin | admin@flocoffee.com | password |
+| Staff | staff@flocoffee.com | password |

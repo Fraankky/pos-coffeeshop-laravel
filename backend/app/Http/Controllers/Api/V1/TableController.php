@@ -16,12 +16,14 @@ class TableController extends Controller
     public function index(): JsonResponse
     {
         $tables = Table::orderBy('table_number')->get();
+
         return $this->success($tables);
     }
 
     public function store(StoreTableRequest $request): JsonResponse
     {
         $table = Table::create($request->validated());
+
         return $this->created($table);
     }
 
@@ -33,12 +35,14 @@ class TableController extends Controller
     public function update(UpdateTableRequest $request, Table $table): JsonResponse
     {
         $table->update($request->validated());
+
         return $this->success($table);
     }
 
     public function destroy(Table $table): JsonResponse
     {
         $table->delete();
+
         return $this->noContent();
     }
 }

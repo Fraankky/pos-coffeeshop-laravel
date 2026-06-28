@@ -4,17 +4,20 @@ import type { Category, MenuItem } from '@/types';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Table, TableHeader, TableBody, TableRow, TableCell, TableHead } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { useToast } from '@/components/Toast';
 
 export function AdminMenuPage() {
   const [items, setItems] = useState<MenuItem[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editing, setEditing] = useState<MenuItem | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<MenuItem | null>(null);
   const [form, setForm] = useState({ name: '', category_id: 0, price: 0, image: '', stock_qty: 0, stock_min_threshold: 5, is_available: true });
+  const toast = useToast();
 
   const fetchData = useCallback(async () => {
     const [itemsRes, catRes] = await Promise.all([
@@ -48,8 +51,17 @@ export function AdminMenuPage() {
     fetchData();
   };
 
-  const handleDelete = async (id: number) => {
-    if (confirm('Hapus item ini?')) { await api.delete(`/menu-items/${id}`); fetchData(); }
+  const confirmDelete = async () => {
+    if (!deleteTarget) return;
+
+    try {
+      await api.delete(`/menu-items/${deleteTarget.id}`);
+      setDeleteTarget(null);
+      toast.show('Menu berhasil dihapus');
+      fetchData();
+    } catch {
+      toast.show('Gagal menghapus menu', 'error');
+    }
   };
 
   const catIdToString = (category_id: number) => categories.find((c) => c.id === category_id)?.name ?? '-';
@@ -113,6 +125,21 @@ export function AdminMenuPage() {
         </DialogContent>
       </Dialog>
 
+      <Dialog open={!!deleteTarget} onOpenChange={(open) => !open && setDeleteTarget(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Hapus Menu</DialogTitle>
+            <DialogDescription>
+              Hapus menu "{deleteTarget?.name}" dari daftar menu?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteTarget(null)}>Batal</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Hapus</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       <Card>
         <CardContent className="p-0">
           <Table>
@@ -152,7 +179,7 @@ export function AdminMenuPage() {
                   </TableCell>
                   <TableCell className="text-center">
                     <Button variant="link" size="sm" onClick={() => openEdit(item)}>Edit</Button>
-                    <Button variant="link" size="sm" className="text-destructive" onClick={() => handleDelete(item.id)}>Hapus</Button>
+                    <Button variant="link" size="sm" className="text-destructive" onClick={() => setDeleteTarget(item)}>Hapus</Button>
                   </TableCell>
                 </TableRow>
               ))}

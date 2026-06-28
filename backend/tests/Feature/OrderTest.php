@@ -14,7 +14,9 @@ class OrderTest extends TestCase
     use RefreshDatabase;
 
     private User $staff;
+
     private MenuItem $item;
+
     private string $token;
 
     protected function setUp(): void

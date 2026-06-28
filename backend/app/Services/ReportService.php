@@ -21,7 +21,7 @@ class ReportService
             'month' => DB::raw($driver === 'sqlite'
                 ? "strftime('%Y-%m', created_at) as period"
                 : "DATE_FORMAT(created_at, '%Y-%m') as period"),
-            default => DB::raw("DATE(created_at) as period"),
+            default => DB::raw('DATE(created_at) as period'),
         };
 
         $query = Order::where('status', 'completed')
@@ -52,21 +52,22 @@ class ReportService
             DB::raw('SUM(quantity) as total_quantity'),
             DB::raw('COALESCE(SUM(subtotal), 0) as total_revenue')
         )
-            ->whereHas('order', fn($q) => $q->where('status', 'completed'))
+            ->whereHas('order', fn ($q) => $q->where('status', 'completed'))
             ->groupBy('menu_item_id')
             ->orderByDesc('total_quantity')
             ->limit($limit);
 
         if ($from) {
-            $query->whereHas('order', fn($q) => $q->whereDate('created_at', '>=', $from));
+            $query->whereHas('order', fn ($q) => $q->whereDate('created_at', '>=', $from));
         }
 
         if ($to) {
-            $query->whereHas('order', fn($q) => $q->whereDate('created_at', '<=', $to));
+            $query->whereHas('order', fn ($q) => $q->whereDate('created_at', '<=', $to));
         }
 
         return $query->get()->map(function ($item) {
             $menuItem = MenuItem::find($item->menu_item_id);
+
             return [
                 'menu_item_id' => $item->menu_item_id,
                 'name' => $menuItem?->name ?? 'Deleted Item',
@@ -97,7 +98,7 @@ class ReportService
         $csv = "Order ID,Date,Staff,Table,Items,Total Amount,Payment Method,Payment Status\n";
 
         foreach ($orders as $order) {
-            $items = $order->orderItems->map(fn($i) => "{$i->menuItem?->name} x{$i->quantity}")->implode('; ');
+            $items = $order->orderItems->map(fn ($i) => "{$i->menuItem?->name} x{$i->quantity}")->implode('; ');
             $csv .= implode(',', [
                 $order->id,
                 $order->created_at->format('Y-m-d H:i:s'),
@@ -107,7 +108,7 @@ class ReportService
                 $order->total_amount,
                 $this->escapeCsvField($order->payment?->method ?? 'N/A'),
                 $this->escapeCsvField($order->payment?->payment_status ?? 'N/A'),
-            ]) . "\n";
+            ])."\n";
         }
 
         return $csv;
@@ -118,9 +119,9 @@ class ReportService
         $escaped = str_replace('"', '""', $value);
 
         if (preg_match('/^[=+\-@\t]/', $escaped)) {
-            $escaped = "'" . $escaped;
+            $escaped = "'".$escaped;
         }
 
-        return '"' . $escaped . '"';
+        return '"'.$escaped.'"';
     }
 }

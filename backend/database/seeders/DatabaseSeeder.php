@@ -24,11 +24,11 @@ class DatabaseSeeder extends Seeder
         ]);
 
         // Demo categories
-        $kopi     = Category::factory()->create(['name' => 'Kopi', 'description' => 'Minuman kopi segar']);
-        $nonKopi  = Category::factory()->create(['name' => 'Non-Kopi', 'description' => 'Minuman non-kopi']);
-        $teh      = Category::factory()->create(['name' => 'Teh', 'description' => 'Aneka teh pilihan']);
-        $snack    = Category::factory()->create(['name' => 'Makanan Ringan', 'description' => 'Cemilan & pastry']);
-        $makanan  = Category::factory()->create(['name' => 'Makanan Berat', 'description' => 'Makanan utama']);
+        $kopi = Category::factory()->create(['name' => 'Kopi', 'description' => 'Minuman kopi segar']);
+        $nonKopi = Category::factory()->create(['name' => 'Non-Kopi', 'description' => 'Minuman non-kopi']);
+        $teh = Category::factory()->create(['name' => 'Teh', 'description' => 'Aneka teh pilihan']);
+        $snack = Category::factory()->create(['name' => 'Makanan Ringan', 'description' => 'Cemilan & pastry']);
+        $makanan = Category::factory()->create(['name' => 'Makanan Berat', 'description' => 'Makanan utama']);
 
         $img = fn (string $id) => "https://images.unsplash.com/{$id}?w=600&h=500&fit=crop&crop=center";
 
@@ -57,7 +57,7 @@ class DatabaseSeeder extends Seeder
             ['name' => 'Fresh Orange Juice',    'description' => 'Jus jeruk peras segar tanpa gula tambahan.',       'price' => 20000, 'category_id' => $nonKopi->id, 'image' => $img('photo-1621506289937-a8e4df240d0b')],
             ['name' => 'Lemon Squash',          'description' => 'Lemon segar + soda, asam manis menyegarkan.',      'price' => 18000, 'category_id' => $nonKopi->id, 'image' => $img('photo-1513558161293-1d2b587c6f1e')],
             ['name' => 'Lychee Yakult',         'description' => 'Perpaduan yakult & lychee, manis dan segar.',      'price' => 20000, 'category_id' => $nonKopi->id, 'image' => $img('photo-1551024601224-1f697f65cc57')],
-            ['name' => 'Mineral Water',         'description' => 'Air mineral dingin botolan.',                      'price' =>  7000, 'category_id' => $nonKopi->id, 'image' => $img('photo-1523362628745-4c15015b8546')],
+            ['name' => 'Mineral Water',         'description' => 'Air mineral dingin botolan.',                      'price' => 7000, 'category_id' => $nonKopi->id, 'image' => $img('photo-1523362628745-4c15015b8546')],
 
             // ── Teh (6 items) ──
             ['name' => 'Green Tea',             'description' => 'Teh hijau Jepang berkualitas premium.',            'price' => 15000, 'category_id' => $teh->id, 'image' => $img('photo-1627435601361-ec25f5b1d0e5')],

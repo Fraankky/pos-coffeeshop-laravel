@@ -4,7 +4,6 @@ namespace Tests\Feature;
 
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Hash;
 use Tests\TestCase;
 
 class UserManagementTest extends TestCase
@@ -12,7 +11,9 @@ class UserManagementTest extends TestCase
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1/users';
+
     private User $admin;
+
     private string $token;
 
     protected function setUp(): void

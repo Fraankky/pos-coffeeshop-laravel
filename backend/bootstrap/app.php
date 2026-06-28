@@ -1,8 +1,11 @@
 <?php
 
+use App\Http\Middleware\RoleMiddleware;
+use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Session\Middleware\StartSession;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,12 +16,12 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
-            'role' => \App\Http\Middleware\RoleMiddleware::class,
+            'role' => RoleMiddleware::class,
         ]);
 
         $middleware->api(prepend: [
-            \Illuminate\Cookie\Middleware\EncryptCookies::class,
-            \Illuminate\Session\Middleware\StartSession::class,
+            EncryptCookies::class,
+            StartSession::class,
         ]);
 
         $middleware->statefulApi();

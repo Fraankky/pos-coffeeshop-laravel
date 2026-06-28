@@ -12,8 +12,11 @@ class CategoryTest extends TestCase
     use RefreshDatabase;
 
     private string $baseUrl = '/api/v1/categories';
+
     private User $admin;
+
     private User $staff;
+
     private string $token;
 
     protected function setUp(): void

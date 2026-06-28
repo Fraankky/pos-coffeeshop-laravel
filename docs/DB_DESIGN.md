@@ -377,8 +377,8 @@ CREATE TABLE payments (
 ### Demo users
 | Name | Email | Password | Role |
 |------|-------|----------|------|
-| Admin | admin@pos.coffee | password | admin |
-| Staff 1 | staff@pos.coffee | password | staff |
+| Admin | admin@flocoffee.com | password | admin |
+| Staff 1 | staff@flocoffee.com | password | staff |
 
 ### Demo categories (Coffee Shop themed)
 - Kopi (Coffee)

@@ -23,7 +23,6 @@ class OrderController extends Controller
     {
         $orders = $this->orderService->getFilteredOrders(
             $request->status,
-            $request->date,
             $request->from,
             $request->to
         );
@@ -48,6 +47,7 @@ class OrderController extends Controller
     public function show(Order $order): JsonResponse
     {
         $order->load(['orderItems.menuItem', 'payment', 'user', 'table']);
+
         return $this->success($order);
     }
 
@@ -68,6 +68,7 @@ class OrderController extends Controller
     public function activeOrders(): JsonResponse
     {
         $orders = $this->orderService->getActiveOrders();
+
         return $this->success($orders);
     }
 }

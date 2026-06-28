@@ -41,12 +41,14 @@ class MenuItemController extends Controller
         }
 
         $menuItem = MenuItem::create($data);
+
         return $this->created($menuItem);
     }
 
     public function show(MenuItem $menuItem): JsonResponse
     {
         $menuItem->load('category');
+
         return $this->success($menuItem);
     }
 
@@ -59,18 +61,21 @@ class MenuItemController extends Controller
         }
 
         $menuItem->update($data);
+
         return $this->success($menuItem);
     }
 
     public function destroy(MenuItem $menuItem): JsonResponse
     {
         $menuItem->delete();
+
         return $this->noContent();
     }
 
     public function updateStock(UpdateStockRequest $request, MenuItem $menuItem): JsonResponse
     {
         $menuItem->update(['stock_qty' => $request->validated()['stock_qty']]);
+
         return $this->success($menuItem);
     }
 }

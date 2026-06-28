@@ -4,7 +4,6 @@ namespace App\Services;
 
 use App\Models\MenuItem;
 use App\Models\Order;
-use App\Models\OrderItem;
 use Illuminate\Support\Facades\DB;
 
 class OrderService
@@ -65,7 +64,7 @@ class OrderService
 
         $currentStatus = $order->status;
 
-        if (!isset($validTransitions[$currentStatus]) || !in_array($newStatus, $validTransitions[$currentStatus])) {
+        if (! isset($validTransitions[$currentStatus]) || ! in_array($newStatus, $validTransitions[$currentStatus])) {
             throw new \RuntimeException(
                 "Invalid status transition from {$currentStatus} to {$newStatus}"
             );
@@ -99,7 +98,7 @@ class OrderService
             ->get();
     }
 
-    public function getFilteredOrders(?string $status, ?string $date, ?string $from = null, ?string $to = null)
+    public function getFilteredOrders(?string $status, ?string $from = null, ?string $to = null)
     {
         $query = Order::query();
 

@@ -18,6 +18,7 @@ class UserController extends Controller
     public function index(): JsonResponse
     {
         $users = User::select(['id', 'name', 'email', 'role', 'is_active', 'created_at'])->get();
+
         return $this->success($users);
     }
 
@@ -27,6 +28,7 @@ class UserController extends Controller
         $data['password'] = Hash::make($data['password']);
 
         $user = User::create($data);
+
         return $this->created($user);
     }
 
@@ -39,6 +41,7 @@ class UserController extends Controller
         }
 
         $user->update($data);
+
         return $this->success($user);
     }
 
@@ -48,7 +51,8 @@ class UserController extends Controller
             return $this->forbidden('Cannot deactivate yourself');
         }
 
-        $user->update(['is_active' => !$user->is_active]);
+        $user->update(['is_active' => ! $user->is_active]);
+
         return $this->success($user);
     }
 
@@ -59,6 +63,7 @@ class UserController extends Controller
         }
 
         $user->delete();
+
         return $this->noContent('User deleted successfully');
     }
 }
